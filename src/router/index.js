@@ -2,11 +2,13 @@ import { createRouter, createWebHistory } from 'vue-router'
 import AdminLogin from '@/views/admin/AdminLogin.vue'
 import AdminRegister from '@/views/admin/AdminRegister.vue'
 import AdminLayout from '@/views/admin/AdminLayout.vue'
-import AdminDashboard from '@/views/admin/AdminDashboard.vue'
+import AdminDashboard from '@/views/pages/AdminDashboard.vue'
 import MoviesList from '@/views/pages/MoviesList.vue'
+import CinemasList from '@/views/pages/CinemasList.vue'
 import request from '@/utils/request'
 import { persistSessionPayload, canAccessAny } from '@/utils/auth'
 import {
+  CINEMA_PAGE_ROLES,
   MOVIE_PAGE_ROLES,
   ORDER_PAGE_ROLES,
   USER_PAGE_ROLES,
@@ -24,6 +26,11 @@ const routes = [
     children: [
       { path: '', redirect: '/admin/dashboard' },
       { path: 'dashboard', component: AdminDashboard },
+      {
+        path:'cinemas/list',
+        component:CinemasList,
+        meta: { roles: CINEMA_PAGE_ROLES }
+      },
       {
         path: 'movies/list',
         component: MoviesList,

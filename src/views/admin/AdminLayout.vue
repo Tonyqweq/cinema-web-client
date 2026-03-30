@@ -16,6 +16,14 @@
           <span>仪表盘</span>
         </el-menu-item>
 
+        <!-- 一级：影院管理（多级）  -->
+        <el-sub-menu v-if="showMovieMenu" index="movie">
+          <template #title>
+            <span>影院管理</span>
+          </template>
+          <el-menu-item index="/admin/cinemas/list">影院列表</el-menu-item>
+        </el-sub-menu>
+
         <!-- 一级：电影管理（多级） — 与后端 app.security.movie-api-roles 一致 -->
         <el-sub-menu v-if="showMovieMenu" index="movie">
           <template #title>
