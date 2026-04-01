@@ -17,7 +17,7 @@
         </el-menu-item>
 
         <!-- 一级：影院管理（多级）  -->
-        <el-sub-menu v-if="showMovieMenu" index="movie">
+        <el-sub-menu v-if="showCinemaMenu" index="cinema">
           <template #title>
             <span>影院管理</span>
           </template>
@@ -73,14 +73,27 @@
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import request from '@/utils/request'
-import { canAccessAny } from '@/utils/auth'
+import request from '../../utils/request'
+
+// 临时使用内联权限检查，避免找不到模块错误
+const canAccessAny = (requiredRoles: string[]): boolean => {
+  const rolesStr = localStorage.getItem('admin_roles')
+  if (!rolesStr) return false
+  try {
+    const userRoles: string[] = JSON.parse(rolesStr)
+    return requiredRoles.some(role => userRoles.includes(role))
+  } catch {
+    return false
+  }
+}
+
 import {
+  CINEMA_PAGE_ROLES,
   MOVIE_PAGE_ROLES,
   ORDER_PAGE_ROLES,
   USER_PAGE_ROLES,
   SETTINGS_PAGE_ROLES
-} from '@/constants/adminAccess'
+} from '../../constants/adminAccess'
 
 const route = useRoute()
 const router = useRouter()
@@ -89,6 +102,10 @@ const router = useRouter()
 const activeMenu = computed(() => route.path)
 
 // 依赖 route.path：路由切换后重新读取 localStorage 中的角色
+const showCinemaMenu = computed(() => {
+  void route.path
+  return canAccessAny(CINEMA_PAGE_ROLES)
+})
 const showMovieMenu = computed(() => {
   void route.path
   return canAccessAny(MOVIE_PAGE_ROLES)

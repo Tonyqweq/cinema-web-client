@@ -1,91 +1,82 @@
 <template>
     <el-card class="dashboard" shadow="never" :body-style="{ padding: '16px' }">
       <div class="title-row">
-        <h2 class="title">影片列表</h2>
-        <el-button type="primary" @click="openAddDialog">添加影片</el-button>
+        <h2 class="title">影院列表</h2>
+        <el-button type="primary" @click="openAddDialog">添加影院</el-button>
       </div>
-  
+
       <div class="toolbar">
         <el-input
-          v-model.trim="query.title"
-          placeholder="搜索电影名（title）"
+          v-model.trim="query.name"
+          placeholder="搜索电影院"
           clearable
           style="max-width: 320px"
           @keyup.enter="onSearch"
         />
-  
+
         <el-select
-          v-model="query.language"
-          placeholder="语言"
+          v-model="query.province"
+          placeholder="选择省份"
           clearable
-          style="width: 160px"
-          filterable
-          @change="onSearch"
-        >
-          <el-option v-for="l in languages" :key="l" :label="l" :value="l" />
-        </el-select>
-  
-        <el-select
-          v-model="query.country"
-          placeholder="国家地区"
-          clearable
-          style="width: 180px"
-          filterable
-          @change="onSearch"
-        >
-          <el-option v-for="c in countries" :key="c" :label="c" :value="c" />
-        </el-select>
-  
-        <el-select v-model="query.sortBy" placeholder="排序字段" clearable style="width: 160px" @change="onSearch">
-          <el-option label="时长" value="duration_min" />
-          <el-option label="上映日期" value="release_date" />
-        </el-select>
-  
-        <el-select
-          v-model="query.sortOrder"
-          placeholder="排序方式"
           style="width: 140px"
-          :disabled="!query.sortBy"
           @change="onSearch"
         >
-          <el-option label="降序" value="desc" />
-          <el-option label="升序" value="asc" />
+          <el-option v-for="p in provinces" :key="p.value" :label="p.label" :value="p.value" />
         </el-select>
-  
+
+        <el-select
+          v-model="query.city"
+          placeholder="选择城市"
+          clearable
+          style="width: 140px"
+          :disabled="!query.province"
+          @change="onSearch"
+        >
+          <el-option v-for="c in cities" :key="c.value" :label="c.label" :value="c.value" />
+        </el-select>
+
+        <el-select
+          v-model="query.district"
+          placeholder="选择区县"
+          clearable
+          style="width: 140px"
+          :disabled="!query.city"
+          @change="onSearch"
+        >
+          <el-option v-for="d in districts" :key="d.value" :label="d.label" :value="d.value" />
+        </el-select>
+
         <el-button type="primary" @click="onSearch">查询</el-button>
         <el-button @click="onReset">重置</el-button>
       </div>
   
       <el-table
         v-loading="loading"
-        :data="pagedMovies"
+        :data="pagedCinemas"
         border
         style="width: 100%"
-        empty-text="暂无影片"
+        empty-text="暂无影院"
       >
-        <el-table-column type="index" label="序号" width="80" />
-        <el-table-column prop="title" label="电影名称" min-width="140" />
-        <el-table-column prop="original_title" label="英文名/原名" min-width="160" />
-        <el-table-column prop="language" label="语言" min-width="110" />
-        <el-table-column prop="country" label="国家地区" min-width="140" />
-        <el-table-column prop="duration_min" label="时长 (分钟)" min-width="120" />
-        <el-table-column prop="release_date" label="上映日期" min-width="130" />
+        <el-table-column type="index" label="序号" width="60" />
+        <el-table-column prop="name" label="影院名称" min-width="150" />
+        <el-table-column prop="phone" label="电话" min-width="160" />
+        <el-table-column prop="province" label="省份" min-width="110" />
+        <el-table-column prop="city" label="城市" min-width="110" />
+        <el-table-column prop="district" label="区县" min-width="110" />
+        <el-table-column prop="address" label="详细地址" min-width="280" />
   
         <el-table-column label="状态" min-width="90">
           <template #default="{ row }">
-            <el-tag :type="getMovieStatusType(row.status)">
-              {{ getMovieStatusText(row.status) }}
+            <el-tag :type="getCinemaStatusType(row.status)">
+              {{ getCinemaStatusText(row.status) }}
             </el-tag>
           </template>
         </el-table-column>
   
-        <el-table-column label="操作" fixed="right" min-width="300">
+        <el-table-column label="操作" fixed="right" min-width="200">
           <template #default="{ row }">
             <el-button size="small" @click="onView(row)">详情</el-button>
             <el-button size="small" type="warning" plain @click="onEdit(row)">修改</el-button>
-            <el-button size="small" type="primary" plain @click="onAction(row)">
-              {{ row.status === 1 ? '下架' : '上架' }}
-            </el-button>
             <el-button size="small" type="danger" plain @click="onDelete(row)">删除</el-button>
           </template>
         </el-table-column>
@@ -104,19 +95,18 @@
         />
       </div>
   
-      <el-dialog v-model="detailVisible" title="影片详情" width="720px">
+      <el-dialog v-model="detailVisible" title="影院详情" width="720px">
         <el-descriptions v-if="detail" :column="2" border>
           <el-descriptions-item label="ID">{{ detail.id }}</el-descriptions-item>
-          <el-descriptions-item label="电影名称">{{ detail.title }}</el-descriptions-item>
-          <el-descriptions-item label="原名">{{ detail.original_title }}</el-descriptions-item>
-          <el-descriptions-item label="语言">{{ detail.language }}</el-descriptions-item>
-          <el-descriptions-item label="国家地区">{{ detail.country }}</el-descriptions-item>
-          <el-descriptions-item label="时长(分钟)">{{ detail.duration_min }}</el-descriptions-item>
-          <el-descriptions-item label="上映日期">{{ detail.release_date }}</el-descriptions-item>
-          <el-descriptions-item label="状态">{{ getMovieStatusText(detail.status) }}</el-descriptions-item>
-          <el-descriptions-item label="海报URL" :span="2">{{ detail.poster_url }}</el-descriptions-item>
-          <el-descriptions-item label="预告片URL" :span="2">{{ detail.trailer_url }}</el-descriptions-item>
-          <el-descriptions-item label="简介" :span="2">{{ detail.description }}</el-descriptions-item>
+          <el-descriptions-item label="影院名称">{{ detail.name }}</el-descriptions-item>
+          <el-descriptions-item label="电话">{{ detail.phone }}</el-descriptions-item>
+          <el-descriptions-item label="省份">{{ detail.province }}</el-descriptions-item>
+          <el-descriptions-item label="城市">{{ detail.city }}</el-descriptions-item>
+          <el-descriptions-item label="区县">{{ detail.district }}</el-descriptions-item>
+          <el-descriptions-item label="详细地址">{{ detail.address }}</el-descriptions-item>
+          <el-descriptions-item label="状态">{{ getCinemaStatusText(detail.status) }}</el-descriptions-item>
+          <el-descriptions-item label="纬度" :span="2">{{ detail.latitude }}</el-descriptions-item>
+          <el-descriptions-item label="经度" :span="2">{{ detail.longitude }}</el-descriptions-item>
           <el-descriptions-item label="创建时间">{{ detail.created_at }}</el-descriptions-item>
           <el-descriptions-item label="更新时间">{{ detail.updated_at }}</el-descriptions-item>
         </el-descriptions>
@@ -124,103 +114,89 @@
           <el-button @click="detailVisible = false">关闭</el-button>
         </template>
       </el-dialog>
-  
-      <!-- 添加：单条 / Excel -->
-      <el-dialog v-model="addVisible" title="添加影片" width="640px" destroy-on-close @closed="resetAddForm">
+
+      <!-- 添加影院对话框 -->
+      <el-dialog v-model="addVisible" title="添加影院" width="640px" destroy-on-close @closed="resetAddForm">
         <el-tabs v-model="addTab">
           <el-tab-pane label="逐条录入" name="single">
             <el-form ref="addFormRef" :model="addForm" :rules="formRules" label-width="100px">
-              <el-form-item label="电影名称" prop="title">
-                <el-input v-model.trim="addForm.title" placeholder="必填" clearable />
+              <el-form-item label="影院名称" prop="name" required>
+                <el-input v-model.trim="addForm.name" placeholder="必填" clearable />
               </el-form-item>
-              <el-form-item label="原名" prop="original_title">
-                <el-input v-model.trim="addForm.original_title" clearable />
+              <el-form-item label="电话" prop="phone">
+                <el-input v-model.trim="addForm.phone" clearable />
               </el-form-item>
-              <el-form-item label="语言" prop="language">
-                <el-select v-model="addForm.language" placeholder="选择语言" clearable filterable style="width: 100%">
-                  <el-option v-for="x in languageOptionsFor(addForm.language)" :key="x" :label="x" :value="x" />
+              <el-form-item label="省份" prop="province" required>
+                <el-select v-model="addForm.province" placeholder="选择省份" clearable style="width: 100%">
+                  <el-option v-for="p in provinces" :key="p.value" :label="p.label" :value="p.value" />
                 </el-select>
               </el-form-item>
-              <el-form-item label="国家地区" prop="country">
-                <el-select v-model="addForm.country" placeholder="选择国家地区" clearable filterable style="width: 100%">
-                  <el-option v-for="x in countryOptionsFor(addForm.country)" :key="x" :label="x" :value="x" />
+              <el-form-item label="城市" prop="city" required>
+                <el-select v-model="addForm.city" placeholder="选择城市" clearable :disabled="!addForm.province" style="width: 100%">
+                  <el-option v-for="c in addCities" :key="c.value" :label="c.label" :value="c.value" />
                 </el-select>
               </el-form-item>
-              <el-form-item label="时长(分)" prop="duration_min">
-                <el-input-number v-model="addForm.duration_min" :min="0" :step="1" controls-position="right" style="width: 100%" />
+              <el-form-item label="区县" prop="district" required>
+                <el-select v-model="addForm.district" placeholder="选择区县" clearable :disabled="!addForm.city" style="width: 100%">
+                  <el-option v-for="d in addDistricts" :key="d.value" :label="d.label" :value="d.value" />
+                </el-select>
               </el-form-item>
-              <el-form-item label="上映日期" prop="release_date">
-                <el-input v-model.trim="addForm.release_date" placeholder="yyyy-MM-dd，可选" clearable />
+              <el-form-item label="详细地址" prop="address" required>
+                <el-input v-model="addForm.address" type="textarea" :rows="3" />
               </el-form-item>
-              <el-form-item label="简介" prop="description">
-                <el-input v-model="addForm.description" type="textarea" :rows="3" />
+              <el-form-item label="纬度" prop="latitude">
+                <el-input v-model.trim="addForm.latitude" clearable />
               </el-form-item>
-              <el-form-item label="海报URL" prop="poster_url">
-                <el-input v-model.trim="addForm.poster_url" clearable />
-              </el-form-item>
-              <el-form-item label="预告片URL" prop="trailer_url">
-                <el-input v-model.trim="addForm.trailer_url" clearable />
+              <el-form-item label="经度" prop="longitude">
+                <el-input v-model.trim="addForm.longitude" clearable />
               </el-form-item>
             </el-form>
-          </el-tab-pane>
-          <el-tab-pane label="Excel 导入" name="excel">
-            <p class="hint">
-              支持 .xlsx / .xls。首行可为表头：
-              <code>title, original_title, language, country, duration_min, release_date, description, poster_url, trailer_url</code>
-              ；也可省略表头，按上述列顺序从第一行开始填写。无需填写 id。
-            </p>
-            <el-upload
-              drag
-              :auto-upload="false"
-              :limit="1"
-              accept=".xlsx,.xls"
-              :on-change="onImportFileChange"
-              :on-remove="() => (importFile = null)"
-            >
-              <div class="el-upload__text">将文件拖到此处，或 <em>点击选择</em></div>
-            </el-upload>
           </el-tab-pane>
         </el-tabs>
         <template #footer>
           <el-button @click="addVisible = false">取消</el-button>
-          <el-button v-if="addTab === 'single'" type="primary" :loading="addSubmitting" @click="submitAddSingle">保存</el-button>
-          <el-button v-else type="primary" :loading="importSubmitting" @click="submitImport">开始导入</el-button>
+          <el-button type="primary" :loading="addSubmitting" @click="submitAddSingle">保存</el-button>
         </template>
       </el-dialog>
-  
-      <!-- 修改（不可改 id、status） -->
-      <el-dialog v-model="editVisible" title="修改影片" width="640px" destroy-on-close @closed="resetEditForm">
+
+      <!-- 修改对话框 -->
+      <el-dialog v-model="editVisible" title="修改影院" width="640px" destroy-on-close @closed="resetEditForm">
         <el-form ref="editFormRef" :model="editForm" :rules="formRules" label-width="100px">
-          <el-form-item label="电影名称" prop="title">
-            <el-input v-model.trim="editForm.title" placeholder="必填" clearable />
+          <el-form-item label="影院名称" prop="name" required>
+          <el-input v-model.trim="editForm.name" placeholder="必填" clearable />
+        </el-form-item>
+        <el-form-item label="电话" prop="phone">
+          <el-input v-model.trim="editForm.phone" clearable />
+        </el-form-item>
+        <el-form-item label="省份" prop="province" required>
+          <el-select v-model="editForm.province" placeholder="选择省份" clearable style="width: 100%">
+            <el-option v-for="p in provinces" :key="p.value" :label="p.label" :value="p.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="城市" prop="city" required>
+          <el-select v-model="editForm.city" placeholder="选择城市" clearable :disabled="!editForm.province" style="width: 100%">
+            <el-option v-for="c in editCities" :key="c.value" :label="c.label" :value="c.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="区县" prop="district" required>
+          <el-select v-model="editForm.district" placeholder="选择区县" clearable :disabled="!editForm.city" style="width: 100%">
+            <el-option v-for="d in editDistricts" :key="d.value" :label="d.label" :value="d.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="详细地址" prop="address" required>
+          <el-input v-model="editForm.address" type="textarea" :rows="3" />
+        </el-form-item>
+          <el-form-item label="纬度" prop="latitude">
+            <el-input v-model.trim="editForm.latitude" clearable />
           </el-form-item>
-          <el-form-item label="原名" prop="original_title">
-            <el-input v-model.trim="editForm.original_title" clearable />
+          <el-form-item label="经度" prop="longitude">
+            <el-input v-model.trim="editForm.longitude" clearable />
           </el-form-item>
-          <el-form-item label="语言" prop="language">
-            <el-select v-model="editForm.language" placeholder="选择语言" clearable filterable style="width: 100%">
-              <el-option v-for="x in languageOptionsFor(editForm.language)" :key="x" :label="x" :value="x" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="国家地区" prop="country">
-            <el-select v-model="editForm.country" placeholder="选择国家地区" clearable filterable style="width: 100%">
-              <el-option v-for="x in countryOptionsFor(editForm.country)" :key="x" :label="x" :value="x" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="时长(分)" prop="duration_min">
-            <el-input-number v-model="editForm.duration_min" :min="0" :step="1" controls-position="right" style="width: 100%" />
-          </el-form-item>
-          <el-form-item label="上映日期" prop="release_date">
-            <el-input v-model.trim="editForm.release_date" placeholder="yyyy-MM-dd，可选" clearable />
-          </el-form-item>
-          <el-form-item label="简介" prop="description">
-            <el-input v-model="editForm.description" type="textarea" :rows="3" />
-          </el-form-item>
-          <el-form-item label="海报URL" prop="poster_url">
-            <el-input v-model.trim="editForm.poster_url" clearable />
-          </el-form-item>
-          <el-form-item label="预告片URL" prop="trailer_url">
-            <el-input v-model.trim="editForm.trailer_url" clearable />
+          <el-form-item label="状态" prop="status">
+            <el-radio-group v-model="editForm.status">
+              <el-radio :label="1">正常营业</el-radio>
+              <el-radio :label="0">暂停营业</el-radio>
+            </el-radio-group>
           </el-form-item>
         </el-form>
         <template #footer>
@@ -232,116 +208,183 @@
   </template>
   
   <script setup>
-  import { computed, onMounted, ref } from 'vue'
-  import { ElMessage, ElMessageBox } from 'element-plus'
-  import request from '../../utils/request'
+  import { computed, onMounted, ref, watch } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import request from '../../utils/request'
+import { regionData } from '../../utils/regionData'
   
-  const MOVIE_STATUS_CONFIG = {
-    0: { text: '下架', type: 'info' },
-    1: { text: '正常', type: 'success' }
+  const CINEMA_STATUS_CONFIG = {
+    0: { text: '暂停营业', type: 'info' },
+    1: { text: '正常营业', type: 'success' }
   }
   
-  const getMovieStatusText = (status) => MOVIE_STATUS_CONFIG[status]?.text || '未知'
-  const getMovieStatusType = (status) => MOVIE_STATUS_CONFIG[status]?.type || 'info'
-  
+  const getCinemaStatusText = (status) => CINEMA_STATUS_CONFIG[status]?.text || '未知'
+  const getCinemaStatusType = (status) => CINEMA_STATUS_CONFIG[status]?.type || 'info'
+
   const loading = ref(false)
   const currentPage = ref(1)
   const pageSize = ref(10)
-  const movies = ref([])
+  const cinemas = ref([])
   const total = ref(0)
-  const languages = ref([])
-  const countries = ref([])
-  
+
   const query = ref({
-    title: '',
-    language: '',
-    country: '',
-    sortBy: '',
-    sortOrder: 'desc'
+    name: '',
+    province: '',
+    city: '',
+    district: ''
   })
-  
+
+  // 省市区数据
+  const provinces = ref(regionData.provinces)
+  const cities = ref([])
+  const districts = ref([])
+
+  // 城市数据
+  const cityData = regionData.cities
+
+  // 区县数据
+  const districtData = regionData.districts
+
+  // 监听省份变化
+  watch(() => query.value.province, (newProvince) => {
+    if (newProvince) {
+      cities.value = cityData[newProvince] || []
+      query.value.city = ''
+      query.value.district = ''
+      districts.value = []
+    } else {
+      cities.value = []
+      districts.value = []
+    }
+  })
+
+  // 监听城市变化
+  watch(() => query.value.city, (newCity) => {
+    if (newCity) {
+      districts.value = districtData[newCity] || []
+      query.value.district = ''
+    } else {
+      districts.value = []
+    }
+  })
+
   const detailVisible = ref(false)
   const detail = ref(null)
-  
+
   const addVisible = ref(false)
   const addTab = ref('single')
   const addSubmitting = ref(false)
   const importSubmitting = ref(false)
   const importFile = ref(null)
   const addFormRef = ref()
-  const addForm = ref(emptyMovieForm())
-  
+  const addForm = ref(emptyCinemaForm())
+  const addCities = ref([])
+  const addDistricts = ref([])
+
   const editVisible = ref(false)
   const editSubmitting = ref(false)
   const editFormRef = ref()
-  const editForm = ref(emptyMovieForm())
+  const editForm = ref(emptyCinemaForm())
   const editingId = ref(null)
-  
+  const editCities = ref([])
+  const editDistricts = ref([])
+  const isInitializingEdit = ref(false)
+
+  // 监听修改表单中的省份变化
+  watch(() => editForm.value.province, (newProvince) => {
+    if (newProvince) {
+      editCities.value = cityData[newProvince] || []
+      if (!isInitializingEdit.value) {
+        editForm.value.city = ''
+        editForm.value.district = ''
+        editDistricts.value = []
+      }
+    } else {
+      editCities.value = []
+      editDistricts.value = []
+    }
+  })
+
+  // 监听修改表单中的城市变化
+  watch(() => editForm.value.city, (newCity) => {
+    if (newCity) {
+      editDistricts.value = districtData[newCity] || []
+      if (!isInitializingEdit.value) {
+        editForm.value.district = ''
+      }
+    } else {
+      editDistricts.value = []
+    }
+  })
+
+  // 监听添加表单中的省份变化
+  watch(() => addForm.value.province, (newProvince) => {
+    if (newProvince) {
+      addCities.value = cityData[newProvince] || []
+      addForm.value.city = ''
+      addForm.value.district = ''
+      addDistricts.value = []
+    } else {
+      addCities.value = []
+      addDistricts.value = []
+    }
+  })
+
+  // 监听添加表单中的城市变化
+  watch(() => addForm.value.city, (newCity) => {
+    if (newCity) {
+      addDistricts.value = districtData[newCity] || []
+      addForm.value.district = ''
+    } else {
+      addDistricts.value = []
+    }
+  })
+
   const formRules = {
-    title: [{ required: true, message: '请输入电影名称', trigger: 'blur' }]
+    name: [{ required: true, message: '请输入影院名称', trigger: 'blur' }],
+    province: [{ required: true, message: '请选择省份', trigger: 'blur' }],
+    city: [{ required: true, message: '请选择城市', trigger: 'blur' }],
+    district: [{ required: true, message: '请选择区县', trigger: 'blur' }],
+    address: [{ required: true, message: '请输入详细地址', trigger: 'blur' }]
   }
-  
-  function emptyMovieForm() {
+
+  function emptyCinemaForm() {
     return {
-      title: '',
-      original_title: '',
-      language: '',
-      country: '',
-      duration_min: undefined,
-      release_date: '',
-      description: '',
-      poster_url: '',
-      trailer_url: ''
+      name: '',
+      phone: '',
+      province: '',
+      city: '',
+      district: '',
+      address: '',
+      latitude: '',
+      longitude: '',
+      status: 1
     }
   }
-  
-  function languageOptionsFor(current) {
-    const s = new Set((languages.value || []).filter(Boolean))
-    if (current) s.add(current)
-    return [...s]
-  }
-  
-  function countryOptionsFor(current) {
-    const s = new Set((countries.value || []).filter(Boolean))
-    if (current) s.add(current)
-    return [...s]
-  }
-  
-  const pagedMovies = computed(() => movies.value)
-  
-  async function fetchFilters() {
-    try {
-      const res = await request.get('/movies/filters')
-      if (res.data?.code !== 200) return
-      languages.value = res.data?.data?.languages || []
-      countries.value = res.data?.data?.countries || []
-    } catch {
-      // ignore
-    }
-  }
-  
-  async function fetchMovies() {
+
+  const pagedCinemas = computed(() => cinemas.value)
+
+  async function fetchCinemas() {
     loading.value = true
     try {
-      const res = await request.get('/movies', {
+      const res = await request.get('/cinemas', {
         params: {
           page: currentPage.value,
           pageSize: pageSize.value,
-          title: query.value.title || undefined,
-          language: query.value.language || undefined,
-          country: query.value.country || undefined,
-          sortBy: query.value.sortBy || undefined,
-          sortOrder: query.value.sortBy ? (query.value.sortOrder || 'desc') : undefined
+          name: query.value.name || undefined,
+          province: query.value.province || undefined,
+          city: query.value.city || undefined,
+          district: query.value.district || undefined
         }
       })
-  
+
       if (res.data?.code !== 200) {
-        ElMessage.error(res.data?.msg || '获取影片列表失败')
+        ElMessage.error(res.data?.msg || '获取影院列表失败')
         return
       }
-  
+
       const pageData = res.data?.data
-      movies.value = pageData?.records || []
+      cinemas.value = pageData?.records || []
       total.value = pageData?.total || 0
     } catch (e) {
       ElMessage.error(e?.response?.data?.msg || e?.message || '请求失败')
@@ -349,37 +392,36 @@
       loading.value = false
     }
   }
-  
+
   onMounted(() => {
-    fetchFilters()
-    fetchMovies()
+    fetchCinemas()
   })
-  
+
   function handleSizeChange(size) {
     pageSize.value = size
     currentPage.value = 1
-    fetchMovies()
+    fetchCinemas()
   }
-  
+
   function handleCurrentChange(page) {
     currentPage.value = page
-    fetchMovies()
+    fetchCinemas()
   }
-  
+
   function onSearch() {
     currentPage.value = 1
-    fetchMovies()
+    fetchCinemas()
   }
-  
+
   function onReset() {
-    query.value = { title: '', language: '', country: '', sortBy: '', sortOrder: 'desc' }
+    query.value = { name: '', province: '', city: '', district: '' }
     currentPage.value = 1
-    fetchMovies()
+    fetchCinemas()
   }
-  
-  async function onView(movie) {
+
+  async function onView(cinema) {
     try {
-      const res = await request.get(`/movies/${movie.id}`)
+      const res = await request.get(`/cinemas/${cinema.id}`)
       if (res.data?.code !== 200) {
         ElMessage.error(res.data?.msg || '获取详情失败')
         return
@@ -390,35 +432,18 @@
       ElMessage.error(e?.response?.data?.msg || e?.message || '请求失败')
     }
   }
-  
-  async function onAction(movie) {
-    const nextStatus = movie.status === 1 ? 0 : 1
-    const actionText = nextStatus === 1 ? '上架' : '下架'
-  
-    try {
-      const res = await request.put(`/movies/${movie.id}/status`, {
-        status: nextStatus
-      })
-      if (res.data?.code !== 200) {
-        ElMessage.error(res.data?.msg || '更新状态失败')
-        return
-      }
-      ElMessage.success(`${actionText}成功`)
-      await fetchMovies()
-    } catch (e) {
-      ElMessage.error(e?.response?.data?.msg || e?.message || '请求失败')
-    }
-  }
+
+
   
   function openAddDialog() {
     addTab.value = 'single'
     importFile.value = null
-    addForm.value = emptyMovieForm()
+    addForm.value = emptyCinemaForm()
     addVisible.value = true
   }
   
   function resetAddForm() {
-    addForm.value = emptyMovieForm()
+    addForm.value = emptyCinemaForm()
     importFile.value = null
     addTab.value = 'single'
   }
@@ -447,15 +472,14 @@
       if (!valid) return
       addSubmitting.value = true
       try {
-        const res = await request.post('/movies', payloadFromForm(addForm.value))
+        const res = await request.post('/cinemas', addForm.value)
         if (res.data?.code !== 200) {
           ElMessage.error(res.data?.msg || '添加失败')
           return
         }
         ElMessage.success('添加成功')
         addVisible.value = false
-        await fetchFilters()
-        await fetchMovies()
+        await fetchCinemas()
       } catch (e) {
         ElMessage.error(e?.response?.data?.msg || e?.message || '请求失败')
       } finally {
@@ -465,66 +489,87 @@
   }
   
   async function submitImport() {
-    if (!importFile.value) {
-      ElMessage.warning('请先选择 Excel 文件')
-      return
-    }
-    importSubmitting.value = true
-    try {
-      const fd = new FormData()
-      fd.append('file', importFile.value)
-      const res = await request.post('/movies/import', fd)
-      if (res.data?.code !== 200) {
-        ElMessage.error(res.data?.msg || '导入失败')
-        return
-      }
-      const r = res.data?.data
-      const ok = r?.successCount ?? 0
-      const bad = r?.failCount ?? 0
-      ElMessage.success(`导入完成：成功 ${ok} 条，失败 ${bad} 条`)
-      if (r?.errors?.length) {
-        console.warn(r.errors)
-      }
-      addVisible.value = false
-      await fetchFilters()
-      await fetchMovies()
-    } catch (e) {
-      ElMessage.error(e?.response?.data?.msg || e?.message || '请求失败')
-    } finally {
-      importSubmitting.value = false
-    }
+    // if (!importFile.value) {
+    //   ElMessage.warning('请先选择 Excel 文件')
+    //   return
+    // }
+    // importSubmitting.value = true
+    // try {
+    //   const fd = new FormData()
+    //   fd.append('file', importFile.value)
+    //   const res = await request.post('/movies/import', fd)
+    //   if (res.data?.code !== 200) {
+    //     ElMessage.error(res.data?.msg || '导入失败')
+    //     return
+    //   }
+    //   const r = res.data?.data
+    //   const ok = r?.successCount ?? 0
+    //   const bad = r?.failCount ?? 0
+    //   ElMessage.success(`导入完成：成功 ${ok} 条，失败 ${bad} 条`)
+    //   if (r?.errors?.length) {
+    //     console.warn(r.errors)
+    //   }
+    //   addVisible.value = false
+    //   await fetchFilters()
+    //   await fetchMovies()
+    // } catch (e) {
+    //   ElMessage.error(e?.response?.data?.msg || e?.message || '请求失败')
+    // } finally {
+    //   importSubmitting.value = false
+    // }
   }
   
-  async function onEdit(movie) {
-    editingId.value = movie.id
+  async function onEdit(cinema) {
+    editingId.value = cinema.id
     try {
-      const res = await request.get(`/movies/${movie.id}`)
+      const res = await request.get(`/cinemas/${cinema.id}`)
       if (res.data?.code !== 200) {
-        ElMessage.error(res.data?.msg || '获取影片失败')
+        ElMessage.error(res.data?.msg || '获取影院失败')
         return
       }
-      const m = res.data?.data
+      const c = res.data?.data
+      
+      // 设置初始化标志
+      isInitializingEdit.value = true
+      
+      // 手动初始化城市和区县数据
+      if (c.province) {
+        editCities.value = cityData[c.province] || []
+        if (c.city) {
+          editDistricts.value = districtData[c.city] || []
+        }
+      }
+      
+      // 一次性设置所有字段，包括省市区
       editForm.value = {
-        title: m.title || '',
-        original_title: m.original_title || '',
-        language: m.language || '',
-        country: m.country || '',
-        duration_min: m.duration_min ?? undefined,
-        release_date: formatDateField(m.release_date),
-        description: m.description || '',
-        poster_url: m.poster_url || '',
-        trailer_url: m.trailer_url || ''
+        name: c.name || '',
+        phone: c.phone || '',
+        province: c.province || '',
+        city: c.city || '',
+        district: c.district || '',
+        address: c.address || '',
+        latitude: c.latitude || '',
+        longitude: c.longitude || '',
+        status: c.status || 1
       }
+      
       editVisible.value = true
+      
+      // 初始化完成后，重置标志
+      setTimeout(() => {
+        isInitializingEdit.value = false
+      }, 0)
     } catch (e) {
       ElMessage.error(e?.response?.data?.msg || e?.message || '请求失败')
+      // 出错时也要重置标志
+      isInitializingEdit.value = false
     }
   }
-  
-  async function onDelete(movie) {
-    const name = movie?.title || `编号 ${movie?.id}`
+
+  async function onDelete(cinema) {
+    const name = cinema?.name || `编号 ${cinema?.id}`
     try {
-      await ElMessageBox.confirm(`确定要删除影片「${name}」吗？`, '删除确认', {
+      await ElMessageBox.confirm(`确定要删除影院「${name}」吗？`, '删除确认', {
         type: 'warning',
         confirmButtonText: '下一步',
         cancelButtonText: '取消',
@@ -543,16 +588,15 @@
     } catch {
       return
     }
-  
+
     try {
-      const res = await request.delete(`/movies/${movie.id}`)
+      const res = await request.delete(`/cinemas/${cinema.id}`)
       if (res.data?.code !== 200) {
         ElMessage.error(res.data?.msg || '删除失败')
         return
       }
       ElMessage.success('已删除')
-      await fetchFilters()
-      await fetchMovies()
+      await fetchCinemas()
     } catch (e) {
       ElMessage.error(e?.response?.data?.msg || e?.message || '请求失败')
     }
@@ -560,14 +604,14 @@
   
   
   function formatDateField(v) {
-    if (!v) return ''
-    if (typeof v === 'string') return v.length >= 10 ? v.slice(0, 10) : v
-    return String(v)
+    // if (!v) return ''
+    // if (typeof v === 'string') return v.length >= 10 ? v.slice(0, 10) : v
+    // return String(v)
   }
   
   function resetEditForm() {
     editingId.value = null
-    editForm.value = emptyMovieForm()
+    editForm.value = emptyCinemaForm()
   }
   
   async function submitEdit() {
@@ -576,15 +620,14 @@
       if (!valid) return
       editSubmitting.value = true
       try {
-        const res = await request.put(`/movies/${editingId.value}`, payloadFromForm(editForm.value))
+        const res = await request.put(`/cinemas/${editingId.value}`, editForm.value)
         if (res.data?.code !== 200) {
           ElMessage.error(res.data?.msg || '保存失败')
           return
         }
         ElMessage.success('已保存')
         editVisible.value = false
-        await fetchFilters()
-        await fetchMovies()
+        await fetchCinemas()
       } catch (e) {
         ElMessage.error(e?.response?.data?.msg || e?.message || '请求失败')
       } finally {

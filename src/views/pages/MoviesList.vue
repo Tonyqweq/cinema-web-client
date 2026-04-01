@@ -8,7 +8,7 @@
     <div class="toolbar">
       <el-input
         v-model.trim="query.title"
-        placeholder="搜索电影名（title）"
+        placeholder="搜索电影名"
         clearable
         style="max-width: 320px"
         @keyup.enter="onSearch"
@@ -79,7 +79,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="操作" fixed="right" min-width="300">
+      <el-table-column label="操作" fixed="right" min-width="250">
         <template #default="{ row }">
           <el-button size="small" @click="onView(row)">详情</el-button>
           <el-button size="small" type="warning" plain @click="onEdit(row)">修改</el-button>
@@ -108,7 +108,7 @@
       <el-descriptions v-if="detail" :column="2" border>
         <el-descriptions-item label="ID">{{ detail.id }}</el-descriptions-item>
         <el-descriptions-item label="电影名称">{{ detail.title }}</el-descriptions-item>
-        <el-descriptions-item label="原名">{{ detail.original_title }}</el-descriptions-item>
+        <el-descriptions-item label="英文名/原名">{{ detail.original_title }}</el-descriptions-item>
         <el-descriptions-item label="语言">{{ detail.language }}</el-descriptions-item>
         <el-descriptions-item label="国家地区">{{ detail.country }}</el-descriptions-item>
         <el-descriptions-item label="时长(分钟)">{{ detail.duration_min }}</el-descriptions-item>
@@ -130,27 +130,35 @@
       <el-tabs v-model="addTab">
         <el-tab-pane label="逐条录入" name="single">
           <el-form ref="addFormRef" :model="addForm" :rules="formRules" label-width="100px">
-            <el-form-item label="电影名称" prop="title">
+            <el-form-item label="电影名称" prop="title" required>
               <el-input v-model.trim="addForm.title" placeholder="必填" clearable />
             </el-form-item>
-            <el-form-item label="原名" prop="original_title">
-              <el-input v-model.trim="addForm.original_title" clearable />
+            <el-form-item label="原名" prop="original_title" required>
+              <el-input v-model.trim="addForm.original_title" placeholder="必填" clearable />
             </el-form-item>
-            <el-form-item label="语言" prop="language">
+            <el-form-item label="语言" prop="language" required>
               <el-select v-model="addForm.language" placeholder="选择语言" clearable filterable style="width: 100%">
                 <el-option v-for="x in languageOptionsFor(addForm.language)" :key="x" :label="x" :value="x" />
               </el-select>
             </el-form-item>
-            <el-form-item label="国家地区" prop="country">
+            <el-form-item label="国家地区" prop="country" required>
               <el-select v-model="addForm.country" placeholder="选择国家地区" clearable filterable style="width: 100%">
                 <el-option v-for="x in countryOptionsFor(addForm.country)" :key="x" :label="x" :value="x" />
               </el-select>
             </el-form-item>
-            <el-form-item label="时长(分)" prop="duration_min">
+            <el-form-item label="时长(分)" prop="duration_min" required>
               <el-input-number v-model="addForm.duration_min" :min="0" :step="1" controls-position="right" style="width: 100%" />
             </el-form-item>
             <el-form-item label="上映日期" prop="release_date">
-              <el-input v-model.trim="addForm.release_date" placeholder="yyyy-MM-dd，可选" clearable />
+              <el-date-picker
+                v-model="addForm.release_date"
+                type="date"
+                placeholder="选择上映日期"
+                format="YYYY-MM-DD"
+                value-format="YYYY-MM-DD"
+                clearable
+                style="width: 100%"
+              />
             </el-form-item>
             <el-form-item label="简介" prop="description">
               <el-input v-model="addForm.description" type="textarea" :rows="3" />
@@ -191,27 +199,35 @@
     <!-- 修改（不可改 id、status） -->
     <el-dialog v-model="editVisible" title="修改影片" width="640px" destroy-on-close @closed="resetEditForm">
       <el-form ref="editFormRef" :model="editForm" :rules="formRules" label-width="100px">
-        <el-form-item label="电影名称" prop="title">
+        <el-form-item label="电影名称" prop="title" required>
           <el-input v-model.trim="editForm.title" placeholder="必填" clearable />
         </el-form-item>
-        <el-form-item label="原名" prop="original_title">
-          <el-input v-model.trim="editForm.original_title" clearable />
+        <el-form-item label="英文名/原名" prop="original_title" required>
+          <el-input v-model.trim="editForm.original_title" placeholder="必填" clearable />
         </el-form-item>
-        <el-form-item label="语言" prop="language">
+        <el-form-item label="语言" prop="language" required>
           <el-select v-model="editForm.language" placeholder="选择语言" clearable filterable style="width: 100%">
             <el-option v-for="x in languageOptionsFor(editForm.language)" :key="x" :label="x" :value="x" />
           </el-select>
         </el-form-item>
-        <el-form-item label="国家地区" prop="country">
+        <el-form-item label="国家地区" prop="country" required>
           <el-select v-model="editForm.country" placeholder="选择国家地区" clearable filterable style="width: 100%">
             <el-option v-for="x in countryOptionsFor(editForm.country)" :key="x" :label="x" :value="x" />
           </el-select>
         </el-form-item>
-        <el-form-item label="时长(分)" prop="duration_min">
+        <el-form-item label="时长(分)" prop="duration_min" required>
           <el-input-number v-model="editForm.duration_min" :min="0" :step="1" controls-position="right" style="width: 100%" />
         </el-form-item>
         <el-form-item label="上映日期" prop="release_date">
-          <el-input v-model.trim="editForm.release_date" placeholder="yyyy-MM-dd，可选" clearable />
+          <el-date-picker
+            v-model="editForm.release_date"
+            type="date"
+            placeholder="选择上映日期"
+            format="YYYY-MM-DD"
+            value-format="YYYY-MM-DD"
+            clearable
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="简介" prop="description">
           <el-input v-model="editForm.description" type="textarea" :rows="3" />
@@ -278,7 +294,11 @@ const editForm = ref(emptyMovieForm())
 const editingId = ref(null)
 
 const formRules = {
-  title: [{ required: true, message: '请输入电影名称', trigger: 'blur' }]
+  title: [{ required: true, message: '请输入电影名称', trigger: 'blur' }],
+  original_title: [{ required: true, message: '请输入原名', trigger: 'blur' }],
+  language: [{ required: true, message: '请选择语言', trigger: 'blur' }],
+  country: [{ required: true, message: '请选择国家地区', trigger: 'blur' }],
+  duration_min: [{ required: true, message: '请输入时长', trigger: 'blur' }]
 }
 
 function emptyMovieForm() {
