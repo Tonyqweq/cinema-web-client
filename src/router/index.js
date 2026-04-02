@@ -5,6 +5,7 @@ import AdminLayout from '@/views/admin/AdminLayout.vue'
 import AdminDashboard from '@/views/pages/AdminDashboard.vue'
 import MoviesList from '@/views/pages/MoviesList.vue'
 import CinemasList from '@/views/pages/CinemasList.vue'
+import UsersList from '@/views/pages/UsersList.vue'
 import request from '@/utils/request'
 import { persistSessionPayload, canAccessAny } from '@/utils/auth'
 import {
@@ -48,7 +49,7 @@ const routes = [
       },
       {
         path: 'users',
-        component: AdminDashboard,
+        component: UsersList,
         meta: { roles: USER_PAGE_ROLES }
       },
       {
