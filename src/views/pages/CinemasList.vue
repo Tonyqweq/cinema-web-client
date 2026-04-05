@@ -107,8 +107,8 @@
           <el-descriptions-item label="状态">{{ getCinemaStatusText(detail.status) }}</el-descriptions-item>
           <el-descriptions-item label="纬度" :span="2">{{ detail.latitude }}</el-descriptions-item>
           <el-descriptions-item label="经度" :span="2">{{ detail.longitude }}</el-descriptions-item>
-          <el-descriptions-item label="创建时间">{{ detail.created_at }}</el-descriptions-item>
-          <el-descriptions-item label="更新时间">{{ detail.updated_at }}</el-descriptions-item>
+          <el-descriptions-item label="创建时间">{{ detail.createdAt }}</el-descriptions-item>
+          <el-descriptions-item label="更新时间">{{ detail.updatedAt }}</el-descriptions-item>
         </el-descriptions>
         <template #footer>
           <el-button @click="detailVisible = false">关闭</el-button>

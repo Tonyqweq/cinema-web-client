@@ -65,11 +65,11 @@
     >
       <el-table-column type="index" label="序号" width="80" />
       <el-table-column prop="title" label="电影名称" min-width="140" />
-      <el-table-column prop="original_title" label="英文名/原名" min-width="160" />
+      <el-table-column prop="originalTitle" label="英文名/原名" min-width="160" />
       <el-table-column prop="language" label="语言" min-width="110" />
       <el-table-column prop="country" label="国家地区" min-width="140" />
-      <el-table-column prop="duration_min" label="时长 (分钟)" min-width="120" />
-      <el-table-column prop="release_date" label="上映日期" min-width="130" />
+      <el-table-column prop="durationMin" label="时长 (分钟)" min-width="120" />
+      <el-table-column prop="releaseDate" label="上映日期" min-width="130" />
 
       <el-table-column label="状态" min-width="90">
         <template #default="{ row }">
@@ -106,20 +106,20 @@
 
     <el-dialog v-model="detailVisible" title="影片详情" width="720px">
       <el-descriptions v-if="detail" :column="2" border>
-        <el-descriptions-item label="ID">{{ detail.id }}</el-descriptions-item>
-        <el-descriptions-item label="电影名称">{{ detail.title }}</el-descriptions-item>
-        <el-descriptions-item label="英文名/原名">{{ detail.original_title }}</el-descriptions-item>
-        <el-descriptions-item label="语言">{{ detail.language }}</el-descriptions-item>
-        <el-descriptions-item label="国家地区">{{ detail.country }}</el-descriptions-item>
-        <el-descriptions-item label="时长(分钟)">{{ detail.duration_min }}</el-descriptions-item>
-        <el-descriptions-item label="上映日期">{{ detail.release_date }}</el-descriptions-item>
-        <el-descriptions-item label="状态">{{ getMovieStatusText(detail.status) }}</el-descriptions-item>
-        <el-descriptions-item label="海报URL" :span="2">{{ detail.poster_url }}</el-descriptions-item>
-        <el-descriptions-item label="预告片URL" :span="2">{{ detail.trailer_url }}</el-descriptions-item>
-        <el-descriptions-item label="简介" :span="2">{{ detail.description }}</el-descriptions-item>
-        <el-descriptions-item label="创建时间">{{ detail.created_at }}</el-descriptions-item>
-        <el-descriptions-item label="更新时间">{{ detail.updated_at }}</el-descriptions-item>
-      </el-descriptions>
+          <el-descriptions-item label="ID">{{ detail.id }}</el-descriptions-item>
+          <el-descriptions-item label="电影名称">{{ detail.title }}</el-descriptions-item>
+          <el-descriptions-item label="英文名/原名">{{ detail.originalTitle }}</el-descriptions-item>
+          <el-descriptions-item label="语言">{{ detail.language }}</el-descriptions-item>
+          <el-descriptions-item label="国家地区">{{ detail.country }}</el-descriptions-item>
+          <el-descriptions-item label="时长(分钟)">{{ detail.durationMin }}</el-descriptions-item>
+          <el-descriptions-item label="上映日期">{{ detail.releaseDate }}</el-descriptions-item>
+          <el-descriptions-item label="状态">{{ getMovieStatusText(detail.status) }}</el-descriptions-item>
+          <el-descriptions-item label="海报URL" :span="2">{{ detail.posterUrl }}</el-descriptions-item>
+          <el-descriptions-item label="预告片URL" :span="2">{{ detail.trailerUrl }}</el-descriptions-item>
+          <el-descriptions-item label="简介" :span="2">{{ detail.description }}</el-descriptions-item>
+          <el-descriptions-item label="创建时间">{{ detail.createdAt }}</el-descriptions-item>
+          <el-descriptions-item label="更新时间">{{ detail.updatedAt }}</el-descriptions-item>
+        </el-descriptions>
       <template #footer>
         <el-button @click="detailVisible = false">关闭</el-button>
       </template>
@@ -526,14 +526,14 @@ async function onEdit(movie) {
     const m = res.data?.data
     editForm.value = {
       title: m.title || '',
-      original_title: m.original_title || '',
+      original_title: m.originalTitle || '',
       language: m.language || '',
       country: m.country || '',
-      duration_min: m.duration_min ?? undefined,
-      release_date: formatDateField(m.release_date),
+      duration_min: m.durationMin ?? undefined,
+      release_date: formatDateField(m.releaseDate),
       description: m.description || '',
-      poster_url: m.poster_url || '',
-      trailer_url: m.trailer_url || ''
+      poster_url: m.posterUrl || '',
+      trailer_url: m.trailerUrl || ''
     }
     editVisible.value = true
   } catch (e) {
