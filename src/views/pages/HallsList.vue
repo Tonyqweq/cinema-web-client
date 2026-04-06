@@ -49,10 +49,11 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" fixed="right" min-width="200">
+        <el-table-column label="操作" fixed="right" min-width="250">
           <template #default="{ row }">
             <el-button size="small" @click="onView(row)">详情</el-button>
             <el-button size="small" type="warning" plain @click="onEdit(row)">修改</el-button>
+            <el-button size="small" type="primary" plain @click="onSeatManage(row)">座位管理</el-button>
             <el-button size="small" type="danger" plain @click="onDelete(row)">删除</el-button>
           </template>
         </el-table-column>
@@ -79,8 +80,8 @@
           <el-descriptions-item label="影厅类型">{{ detail.type }}</el-descriptions-item>
           <el-descriptions-item label="座位数">{{ detail.capacity }}</el-descriptions-item>
           <el-descriptions-item label="状态">{{ getHallStatusText(detail.status) }}</el-descriptions-item>
-          <el-descriptions-item label="创建时间" :span="2">{{ detail.createdAt }}</el-descriptions-item>
-          <el-descriptions-item label="更新时间" :span="2">{{ detail.updatedAt }}</el-descriptions-item>
+          <el-descriptions-item label="创建时间" :span="2">{{ formatDate(detail.createdAt) }}</el-descriptions-item>
+          <el-descriptions-item label="更新时间" :span="2">{{ formatDate(detail.updatedAt) }}</el-descriptions-item>
         </el-descriptions>
         <template #footer>
           <el-button @click="detailVisible = false">关闭</el-button>
@@ -101,9 +102,9 @@
           <el-form-item label="影厅类型" prop="type">
             <el-input v-model.trim="addForm.type" placeholder="如：IMAX、3D、2D、4DX等" clearable />
           </el-form-item>
-          <el-form-item label="座位数" prop="capacity" required>
+          <!-- <el-form-item label="座位数" prop="capacity" required>
             <el-input v-model.number="addForm.capacity" type="number" placeholder="必填" min="1" />
-          </el-form-item>
+          </el-form-item> -->
           <el-form-item label="状态" prop="status">
             <el-radio-group v-model="addForm.status">
               <el-radio :label="1">正常营业</el-radio>
@@ -131,9 +132,9 @@
           <el-form-item label="影厅类型" prop="type">
             <el-input v-model.trim="editForm.type" placeholder="如：IMAX、3D、2D、4DX等" clearable />
           </el-form-item>
-          <el-form-item label="座位数" prop="capacity" required>
+          <!-- <el-form-item label="座位数" prop="capacity" required>
             <el-input v-model.number="editForm.capacity" type="number" placeholder="必填" min="1" />
-          </el-form-item>
+          </el-form-item> -->
           <el-form-item label="状态" prop="status">
             <el-radio-group v-model="editForm.status">
               <el-radio :label="1">正常营业</el-radio>
@@ -144,6 +145,83 @@
         <template #footer>
           <el-button @click="editVisible = false">取消</el-button>
           <el-button type="primary" :loading="editSubmitting" @click="submitEdit">保存</el-button>
+        </template>
+      </el-dialog>
+
+      <!-- 座位管理对话框 -->
+      <el-dialog v-model="seatManageVisible" title="座位管理" width="800px">
+        <div v-if="currentHall" class="seat-manage-container">
+          <div class="seat-manage-header">
+            <h3>{{ currentHall.name }} - 座位管理</h3>
+            <div class="seat-generate">
+              <el-form :inline="true" :model="seatGenerateForm" class="seat-generate-form">
+                <el-form-item label="行数">
+                  <el-input v-model.number="seatGenerateForm.rows" type="number" min="1" max="20" style="width: 100px" />
+                </el-form-item>
+                <el-form-item label="列数">
+                  <el-input v-model.number="seatGenerateForm.columns" type="number" min="1" max="30" style="width: 100px" />
+                </el-form-item>
+                <el-form-item>
+                  <el-button type="primary" @click="generateSeats" :loading="generatingSeats">生成座位</el-button>
+                </el-form-item>
+              </el-form>
+            </div>
+          </div>
+          
+          <div v-if="seats.length > 0">
+            <div class="screen">屏幕</div>
+            <div class="seat-grid" :style="{ gridTemplateColumns: `repeat(${gridColumns}, 36px)` }">
+              <div v-for="seat in seats" :key="seat.id" 
+                   class="seat-item" 
+                   :class="{
+                     'seat-available': seat.status === 1,
+                     'seat-sold': seat.status === 2,
+                     'seat-locked': seat.status === 3,
+                     'seat-maintenance': seat.status === 4
+                   }"
+                   @click="selectSeat(seat)">
+                <span>{{ seat.seatNumber }}</span>
+              </div>
+            </div>
+          </div>
+          <div v-else class="no-seats">
+            <el-empty description="暂无座位，请先生成座位" />
+          </div>
+        </div>
+        <template #footer>
+          <el-button @click="seatManageVisible = false">关闭</el-button>
+        </template>
+      </el-dialog>
+
+      <!-- 座位编辑对话框 -->
+      <el-dialog v-model="seatEditVisible" title="编辑座位" width="500px">
+        <el-form :model="seatEditForm" ref="seatEditFormRef" label-width="80px">
+          <el-form-item label="座位号" disabled>
+            <el-input v-model="seatEditForm.seatNumber" />
+          </el-form-item>
+          <el-form-item label="座位类型">
+            <el-select v-model="seatEditForm.seatType" style="width: 100%">
+              <el-option label="普通座" value="1" />
+              <el-option label="VIP座" value="2" />
+              <el-option label="情侣座" value="3" />
+              <el-option label="轮椅座" value="4" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="座位状态">
+            <el-select v-model="seatEditForm.status" style="width: 100%">
+              <el-option label="可选" value="1" />
+              <el-option label="已售" value="2" />
+              <el-option label="已锁定" value="3" />
+              <el-option label="维修中" value="4" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="座位价格">
+            <el-input v-model.number="seatEditForm.price" type="number" min="0" step="0.01" placeholder="留空使用影厅统一价格" />
+          </el-form-item>
+        </el-form>
+        <template #footer>
+          <el-button @click="seatEditVisible = false">取消</el-button>
+          <el-button type="primary" :loading="seatEditSubmitting" @click="submitSeatEdit">保存</el-button>
         </template>
       </el-dialog>
     </el-card>
@@ -188,6 +266,36 @@
   const editForm = ref(emptyHallForm())
   const editingId = ref(null)
 
+  // 座位管理相关
+  const seatManageVisible = ref(false)
+  const currentHall = ref(null)
+  const seats = ref([])
+  const generatingSeats = ref(false)
+  const seatGenerateForm = ref({
+    rows: 10,
+    columns: 15
+  })
+
+  // 座位编辑相关
+  const seatEditVisible = ref(false)
+  const seatEditForm = ref({})
+  const seatEditFormRef = ref()
+  const seatEditSubmitting = ref(false)
+  const editingSeatId = ref(null)
+
+  // 计算座位网格的列数
+  const gridColumns = computed(() => {
+    if (seats.value.length === 0) return seatGenerateForm.value.columns
+    // 找到最大的列数
+    let maxColumn = 0
+    seats.value.forEach(seat => {
+      if (seat.columnNumber > maxColumn) {
+        maxColumn = seat.columnNumber
+      }
+    })
+    return maxColumn
+  })
+
   const formRules = {
     cinemaId: [{ required: true, message: '请选择影院', trigger: 'blur' }],
     name: [{ required: true, message: '请输入影厅名称', trigger: 'blur' }],
@@ -202,6 +310,20 @@
       capacity: '',
       status: 1
     }
+  }
+
+  // 时间格式化
+  function formatDate(date) {
+    if (!date) return ''
+    const d = new Date(date)
+    return d.toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    })
   }
 
   const pagedHalls = computed(() => halls.value)
@@ -415,6 +537,94 @@
       }
     })
   }
+
+  // 座位管理相关方法
+  async function onSeatManage(hall) {
+    currentHall.value = hall
+    seatManageVisible.value = true
+    await fetchSeats(hall.id)
+  }
+
+  async function fetchSeats(hallId) {
+    try {
+      const res = await request.get('/seats', {
+        params: { hallId }
+      })
+      if (res.data?.code !== 200) {
+        ElMessage.error(res.data?.msg || '获取座位失败')
+        return
+      }
+      seats.value = res.data?.data || []
+    } catch (e) {
+      ElMessage.error(e?.response?.data?.msg || e?.message || '请求失败')
+    }
+  }
+
+  async function generateSeats() {
+    if (!currentHall.value) return
+    
+    const { rows, columns } = seatGenerateForm.value
+    if (!rows || !columns || rows < 1 || columns < 1) {
+      ElMessage.warning('请输入有效的行数和列数')
+      return
+    }
+
+    generatingSeats.value = true
+    try {
+      const res = await request.post('/seats/generate', {}, {
+        params: {
+          hallId: currentHall.value.id,
+          rows,
+          columns
+        }
+      })
+      if (res.data?.code !== 200) {
+        ElMessage.error(res.data?.msg || '生成座位失败')
+        return
+      }
+      ElMessage.success('座位生成成功')
+      await fetchSeats(currentHall.value.id)
+    } catch (e) {
+      ElMessage.error(e?.response?.data?.msg || e?.message || '请求失败')
+    } finally {
+      generatingSeats.value = false
+    }
+  }
+
+  function selectSeat(seat) {
+    // 打开座位编辑对话框
+    editingSeatId.value = seat.id
+    seatEditForm.value = {
+      seatNumber: seat.seatNumber,
+      seatType: seat.seatType,
+      status: seat.status,
+      price: seat.price
+    }
+    seatEditVisible.value = true
+  }
+
+  async function submitSeatEdit() {
+    if (!seatEditFormRef.value || editingSeatId.value == null) return
+    
+    seatEditSubmitting.value = true
+    try {
+      const res = await request.put(`/seats/${editingSeatId.value}`, seatEditForm.value)
+      if (res.data?.code !== 200) {
+        ElMessage.error(res.data?.msg || '保存失败')
+        return
+      }
+      ElMessage.success('已保存')
+      seatEditVisible.value = false
+      // 重新获取座位数据
+      if (currentHall.value) {
+        await fetchSeats(currentHall.value.id)
+      }
+    } catch (e) {
+      ElMessage.error(e?.response?.data?.msg || e?.message || '请求失败')
+    } finally {
+      seatEditSubmitting.value = false
+    }
+  }
   </script>
 
   <style scoped>
@@ -448,5 +658,97 @@
     margin-top: 12px;
     display: flex;
     justify-content: flex-end;
+  }
+
+  /* 座位管理样式 */
+  .seat-manage-container {
+    padding: 10px;
+  }
+
+  .seat-manage-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .seat-manage-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .seat-generate-form {
+    display: flex;
+    align-items: center;
+  }
+
+  .seat-map {
+    margin-top: 20px;
+  }
+
+  .screen {
+    width: 100%;
+    height: 30px;
+    background-color: #f0f0f0;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 30px;
+    font-size: 14px;
+    color: #666;
+  }
+
+  .seat-grid {
+    display: grid;
+    gap: 8px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    justify-content: center;
+  }
+  
+  .seat-item {
+    width: 36px;
+    height: 36px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.3s;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .seat-item:hover {
+    transform: scale(1.1);
+  }
+
+  .seat-available {
+    background-color: #409EFF;
+    color: white;
+  }
+
+  .seat-sold {
+    background-color: #67C23A;
+    color: white;
+  }
+
+  .seat-locked {
+    background-color: #E6A23C;
+    color: white;
+  }
+
+  .seat-maintenance {
+    background-color: #909399;
+    color: white;
+  }
+
+  .no-seats {
+    margin: 40px 0;
   }
   </style>

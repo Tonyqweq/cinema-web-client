@@ -98,9 +98,31 @@
     }
   }
   
-  onMounted(() => {
+  onMounted(async () => {
     const saved = localStorage.getItem('admin_login_username')
     if (saved) form.username = saved
+    
+    // 检查是否存在token，如果存在则尝试自动登录
+    const token = localStorage.getItem('token')
+    if (token) {
+      try {
+        const sessionRes = await request.get('/sessions/current')
+        if (sessionRes.data?.code === 200 && sessionRes.data?.data) {
+          const d = sessionRes.data.data
+          if (Array.isArray(d.roles)) localStorage.setItem('admin_roles', JSON.stringify(d.roles))
+          if (Array.isArray(d.permissions)) {
+            localStorage.setItem('admin_permissions', JSON.stringify(d.permissions))
+          }
+          ElMessage.success('自动登录成功')
+          router.push('/admin/dashboard')
+        }
+      } catch (e) {
+        // 自动登录失败，清除token
+        localStorage.removeItem('token')
+        localStorage.removeItem('admin_roles')
+        localStorage.removeItem('admin_permissions')
+      }
+    }
   })
   
   function goRegister() {
@@ -182,7 +204,7 @@
         }
 
         const token = data.data.token
-        localStorage.setItem('admin_token', token)
+        localStorage.setItem('token', token)
 
         if (rememberMe.value) localStorage.setItem('admin_login_username', form.username)
         else localStorage.removeItem('admin_login_username')

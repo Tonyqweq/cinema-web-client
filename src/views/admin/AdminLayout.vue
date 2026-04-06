@@ -136,7 +136,7 @@ async function logout() {
     await request.post('/sessions/logout')
 
     // 清除本地登录信息
-    localStorage.removeItem('admin_token')
+    localStorage.removeItem('token')
     localStorage.removeItem('admin_login_username')
     localStorage.removeItem('admin_roles')
     localStorage.removeItem('admin_permissions')

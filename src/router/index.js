@@ -94,7 +94,7 @@ router.beforeEach(async (to, from, next) => {
     return next()
   }
 
-  const token = localStorage.getItem('admin_token')
+  const token = localStorage.getItem('token')
   if (!token) {
     return next('/admin/login')
   }
@@ -121,7 +121,7 @@ router.beforeEach(async (to, from, next) => {
     }
     next()
   } catch (e) {
-    localStorage.removeItem('admin_token')
+    localStorage.removeItem('token')
     localStorage.removeItem('admin_login_username')
     localStorage.removeItem('admin_roles')
     localStorage.removeItem('admin_permissions')
