@@ -31,6 +31,7 @@
             <span>电影管理</span>
           </template>
           <el-menu-item index="/admin/movies/list">影片列表</el-menu-item>
+          <el-menu-item index="/admin/cinema-movies/bind">影院电影绑定</el-menu-item>
           <el-menu-item index="/admin/movies/schedule">排片管理</el-menu-item>
         </el-sub-menu>
 

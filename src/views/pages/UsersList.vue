@@ -24,6 +24,16 @@
         <el-option label="禁用" :value="0" />
       </el-select>
 
+      <el-select
+        v-model="query.role"
+        placeholder="选择角色"
+        clearable
+        style="width: 140px"
+        @change="onSearch"
+      >
+        <el-option v-for="role in roles" :key="role.id" :label="role.name" :value="role.id" />
+      </el-select>
+
       <el-button type="primary" @click="onSearch">查询</el-button>
       <el-button @click="onReset">重置</el-button>
     </div>
@@ -63,6 +73,7 @@
           <el-button size="small" @click="onView(row)">详情</el-button>
           <el-button size="small" type="warning" plain @click="onEdit(row)">修改</el-button>
           <el-button size="small" type="primary" plain @click="onEditRole(row)">角色</el-button>
+          <el-button size="small" type="info" plain @click="onEditCinema(row)">影院</el-button>
           <el-button size="small" type="danger" plain @click="onDelete(row)">删除</el-button>
         </template>
       </el-table-column>
@@ -143,6 +154,24 @@
         <el-button type="primary" :loading="roleSubmitting" @click="submitRole">保存</el-button>
       </template>
     </el-dialog>
+
+    <!-- 修改影院绑定对话框 -->
+    <el-dialog v-model="cinemaVisible" title="修改用户影院绑定" width="640px" destroy-on-close @closed="resetCinemaForm">
+      <el-form ref="cinemaFormRef" :model="cinemaForm" label-width="100px">
+        <el-form-item label="用户名">
+          <el-input v-model="cinemaForm.username" disabled />
+        </el-form-item>
+        <el-form-item label="绑定影院" prop="cinemaId">
+          <el-select v-model="cinemaForm.cinemaId" placeholder="选择影院" clearable>
+            <el-option v-for="cinema in cinemas" :key="cinema.id" :label="cinema.name" :value="cinema.id" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="cinemaVisible = false">取消</el-button>
+        <el-button type="primary" :loading="cinemaSubmitting" @click="submitCinema">保存</el-button>
+      </template>
+    </el-dialog>
   </el-card>
 </template>
 
@@ -179,7 +208,8 @@ const roles = ref([])
 
 const query = ref({
   username: '',
-  status: ''
+  status: '',
+  role: ''
 })
 
 const detailVisible = ref(false)
@@ -196,6 +226,13 @@ const roleSubmitting = ref(false)
 const roleFormRef = ref()
 const roleForm = ref({ username: '', roles: null })
 const editingRoleUserId = ref(null)
+
+const cinemaVisible = ref(false)
+const cinemaSubmitting = ref(false)
+const cinemaFormRef = ref()
+const cinemaForm = ref({ username: '', cinemaId: null })
+const editingCinemaUserId = ref(null)
+const cinemas = ref([])
 
 const formRules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
@@ -219,7 +256,10 @@ async function fetchUsers() {
     const res = await request.get('/admin/users/list', {
       params: {
         page: currentPage.value,
-        limit: pageSize.value
+        limit: pageSize.value,
+        username: query.value.username,
+        status: query.value.status,
+        role: query.value.role
       }
     })
 
@@ -251,8 +291,24 @@ async function fetchRoles() {
   }
 }
 
+async function fetchCinemas() {
+  try {
+    const res = await request.get('/cinemas', {
+      params: { page: 1, pageSize: 100 }
+    })
+    if (res.data?.code !== 200) {
+      ElMessage.error(res.data?.msg || '获取影院列表失败')
+      return
+    }
+    cinemas.value = res.data?.data?.records || []
+  } catch (e) {
+    ElMessage.error(e?.response?.data?.msg || e?.message || '请求失败')
+  }
+}
+
 onMounted(async () => {
   await fetchRoles()
+  await fetchCinemas()
   await fetchUsers()
 })
 
@@ -273,7 +329,7 @@ function onSearch() {
 }
 
 function onReset() {
-  query.value = { username: '', status: '' }
+  query.value = { username: '', status: '', role: '' }
   currentPage.value = 1
   fetchUsers()
 }
@@ -401,6 +457,49 @@ async function submitRole() {
     ElMessage.error(e?.response?.data?.msg || e?.message || '请求失败')
   } finally {
     roleSubmitting.value = false
+  }
+}
+
+async function onEditCinema(user) {
+  editingCinemaUserId.value = user.id
+  cinemaForm.value = { username: user.username, cinemaId: null }
+  
+  // 获取用户当前绑定的影院
+  try {
+    const res = await request.get(`/admin/users/cinema/${user.id}`)
+    if (res.data?.code === 200) {
+      cinemaForm.value.cinemaId = res.data?.data || null
+    }
+  } catch (e) {
+    ElMessage.error(e?.response?.data?.msg || e?.message || '获取用户影院绑定失败')
+  }
+  
+  cinemaVisible.value = true
+}
+
+function resetCinemaForm() {
+  editingCinemaUserId.value = null
+  cinemaForm.value = { username: '', cinemaId: null }
+}
+
+async function submitCinema() {
+  if (!editingCinemaUserId.value) return
+  cinemaSubmitting.value = true
+  try {
+    const res = await request.put('/admin/users/cinema', {
+      userId: editingCinemaUserId.value,
+      cinemaId: cinemaForm.value.cinemaId
+    })
+    if (res.data?.code !== 200) {
+      ElMessage.error(res.data?.msg || '保存失败')
+      return
+    }
+    ElMessage.success('已保存')
+    cinemaVisible.value = false
+  } catch (e) {
+    ElMessage.error(e?.response?.data?.msg || e?.message || '请求失败')
+  } finally {
+    cinemaSubmitting.value = false
   }
 }
 </script>
