@@ -50,7 +50,7 @@
             <span>系统设置</span>
           </template>
           <el-menu-item index="/admin/settings/basic">基础设置</el-menu-item>
-          <el-menu-item index="/admin/settings/role">角色权限</el-menu-item>
+          <!-- <el-menu-item index="/admin/settings/role">角色权限</el-menu-item> -->
         </el-sub-menu>
       </el-menu>
     </el-aside>

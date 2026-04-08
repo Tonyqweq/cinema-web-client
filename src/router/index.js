@@ -8,6 +8,7 @@ import CinemasList from '@/views/pages/CinemasList.vue'
 import HallsList from '@/views/pages/HallsList.vue'
 import UsersList from '@/views/pages/UsersList.vue'
 import CinemaMoviesBind from '@/views/pages/CinemaMoviesBind.vue'
+import ShowtimesList from '@/views/pages/ShowtimesList.vue'
 import request from '@/utils/request'
 import { persistSessionPayload, canAccessAny } from '@/utils/auth'
 import {
@@ -46,7 +47,7 @@ const routes = [
       },
       {
         path: 'movies/schedule',
-        component: AdminDashboard,
+        component: ShowtimesList,
         meta: { roles: MOVIE_PAGE_ROLES }
       },
       {

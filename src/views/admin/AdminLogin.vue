@@ -5,7 +5,7 @@
   
         <el-form ref="formRef" :model="form" :rules="rules" size="large">
           <el-form-item prop="username">
-            <el-input v-model.trim="form.username" placeholder="用户名" clearable @blur="fetchMaskedEmail" />
+            <el-input v-model.trim="form.username" placeholder="用户名" clearable @blur="fetchEmail" />
           </el-form-item>
 
           <el-form-item prop="password">
@@ -18,10 +18,8 @@
             />
           </el-form-item>
 
-          <el-form-item v-if="maskedEmail">
-            <div class="masked-email">
-              <span>验证码已发送至：{{ maskedEmail }}</span>
-            </div>
+          <el-form-item prop="email">
+            <el-input v-model.trim="form.email" placeholder="邮箱" clearable />
           </el-form-item>
 
           <el-form-item prop="verificationCode">
@@ -62,39 +60,40 @@
   const form = reactive({
     username: '',
     password: '',
+    email: '',
     verificationCode: ''
   })
 
   const rules: FormRules = {
     username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
     password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+    email: [{ required: true, message: '请输入邮箱', trigger: 'blur' }, { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }],
     verificationCode: [{ required: true, message: '请输入验证码', trigger: 'blur' }]
   }
 
   const sendingCode = ref(false)
   const countdown = ref(0)
-  const maskedEmail = ref('')
   let countdownTimer: number | null = null
 
-  async function fetchMaskedEmail() {
+  async function fetchEmail() {
     if (!form.username) {
-      maskedEmail.value = ''
+      form.email = ''
       return
     }
     try {
-      console.log('获取打码邮箱：用户名：', form.username)
-      const { data } = await request.get('/sessions/masked-email', {
+      console.log('获取邮箱：用户名：', form.username)
+      const { data } = await request.get('/sessions/email', {
         params: { username: form.username }
       })
-      console.log('获取打码邮箱响应：', data)
+      console.log('获取邮箱响应：', data)
       if (data?.code === 200) {
-        maskedEmail.value = data.data || ''
+        form.email = data.data || ''
       } else {
-        maskedEmail.value = ''
+        form.email = ''
       }
     } catch (e) {
-      console.error('获取打码邮箱失败', e)
-      maskedEmail.value = ''
+      console.error('获取邮箱失败', e)
+      form.email = ''
     }
   }
   
@@ -147,22 +146,15 @@
       ElMessage.warning('请输入用户名')
       return
     }
+    if (!form.email) {
+      ElMessage.warning('请输入邮箱')
+      return
+    }
     sendingCode.value = true
     try {
-      // 首先获取用户的邮箱
-      console.log('发送验证码：获取邮箱，用户名：', form.username)
-      const { data: emailData } = await request.get('/sessions/email', {
-        params: { username: form.username }
-      })
-      console.log('获取邮箱响应：', emailData)
-      if (emailData?.code !== 200 || !emailData.data) {
-        ElMessage.error('获取邮箱失败，请检查用户名是否正确')
-        return
-      }
-      
-      // 然后发送验证码
-      console.log('发送验证码：邮箱：', emailData.data)
-      const { data } = await request.post('/sessions/verification-code', emailData.data, {
+      // 直接使用form.email发送验证码
+      console.log('发送验证码：邮箱：', form.email)
+      const { data } = await request.post('/sessions/verification-code', form.email, {
         headers: {
           'Content-Type': 'text/plain'
         }
@@ -194,6 +186,7 @@
         const { data } = await request.post('/sessions', {
           username: form.username,
           password: form.password,
+          email: form.email,
           verificationCode: form.verificationCode
         })
 
