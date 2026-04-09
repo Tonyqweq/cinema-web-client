@@ -2,7 +2,7 @@
   <div class="showtimes-management">
     <div class="page-header">
       <h1>排片管理</h1>
-      <el-button type="primary" @click="handleAddShowtime">
+      <el-button type="primary" @click="handleAddShowtime" :loading="loading.cinemas || loading.halls || loading.movies">
         <el-icon><Plus /></el-icon>
         添加排片
       </el-button>
@@ -41,14 +41,17 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">查询</el-button>
-          <el-button @click="resetForm">重置</el-button>
+          <el-button type="primary" @click="handleSearch" :loading="loading.showtimes">查询</el-button>
+          <el-button @click="resetForm" :loading="loading.showtimes">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
 
     <div class="time-axis-container">
-      <div v-if="showtimes.length === 0" class="empty-state">
+      <div v-if="loading.showtimes" class="loading-state">
+        <el-loading v-loading="loading.showtimes" element-loading-text="加载中..." style="height: 300px; display: flex; align-items: center; justify-content: center;"></el-loading>
+      </div>
+      <div v-else-if="showtimes.length === 0" class="empty-state">
         <el-empty description="暂无排片数据" />
       </div>
       <div v-else class="time-axis">
@@ -190,8 +193,8 @@
       </el-form>
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="handleSubmit">确定</el-button>
+          <el-button @click="dialogVisible = false" :disabled="loading.submit">取消</el-button>
+          <el-button type="primary" @click="handleSubmit" :loading="loading.submit">确定</el-button>
         </span>
       </template>
     </el-dialog>
@@ -268,6 +271,16 @@ const loadMoviesByCinemaId = async (cinemaId) => {
 
 // 电影列表
 const movies = ref([]);
+
+// 加载状态
+const loading = reactive({
+  cinemas: false,
+  halls: false,
+  movies: false,
+  showtimes: false,
+  submit: false,
+  delete: false
+});
 
 // 对话框
 const dialogVisible = ref(false);
@@ -353,6 +366,7 @@ const isAdmin = () => {
 
 // 加载影院列表
 const loadCinemas = async () => {
+  loading.cinemas = true;
   try {
     // 先加载用户信息
     await loadCurrentUser();
@@ -411,11 +425,14 @@ const loadCinemas = async () => {
         name: '默认影院'
       }
     ];
+  } finally {
+    loading.cinemas = false;
   }
 };
 
 // 加载影厅列表（根据选择的影院加载）
 const loadHalls = async (cinemaId) => {
+  loading.halls = true;
   try {
     if (cinemaId) {
       const response = await request.get(`/halls?page=1&pageSize=1000&cinemaId=${cinemaId}`);
@@ -457,11 +474,14 @@ const loadHalls = async (cinemaId) => {
         name: '2号厅'
       }
     ];
+  } finally {
+    loading.halls = false;
   }
 };
 
 // 加载电影列表
 const loadMovies = async () => {
+  loading.movies = true;
   try {
     const response = await request.get('/movies?page=1&pageSize=100');
     if (response.data.code === 200) {
@@ -495,11 +515,14 @@ const loadMovies = async () => {
         title: '电影2'
       }
     ];
+  } finally {
+    loading.movies = false;
   }
 };
 
 // 加载排片列表
 const loadShowtimes = async () => {
+  loading.showtimes = true;
   try {
     const response = await request.get('/showtimes', {
       params: {
@@ -516,6 +539,8 @@ const loadShowtimes = async () => {
     }
   } catch (error) {
     console.error('加载排片列表失败:', error);
+  } finally {
+    loading.showtimes = false;
   }
 };
 
@@ -581,6 +606,7 @@ const handleDeleteShowtime = (id) => {
     cancelButtonText: '取消',
     type: 'warning'
   }).then(async () => {
+    loading.delete = true;
     try {
       const response = await request.delete(`/showtimes/${id}`);
       if (response.data.code === 200) {
@@ -592,6 +618,8 @@ const handleDeleteShowtime = (id) => {
     } catch (error) {
       console.error('删除排片失败:', error);
       ElMessage.error('删除失败');
+    } finally {
+      loading.delete = false;
     }
   }).catch(() => {
     // 取消删除
@@ -625,16 +653,6 @@ const handleStartTimeChange = async () => {
           const startTime = new Date(showtimeForm.startTime);
           const endTime = new Date(startTime.getTime() + movie.durationMin * 60 * 1000);
           showtimeForm.endTime = endTime;
-          
-          // 检查时间冲突
-          if (showtimeForm.hallId) {
-            const response = await request.post('/showtimes', {
-              ...showtimeForm
-            });
-            if (response.data.code !== 200) {
-              ElMessage.warning(response.data.message || '时间设置有误');
-            }
-          }
         }
       }
     } catch (error) {
@@ -657,6 +675,7 @@ const handleSubmit = async () => {
   
   showtimeFormRef.value.validate(async (valid) => {
     if (valid) {
+      loading.submit = true;
       try {
         const response = await request.post('/showtimes', showtimeForm);
         if (response.data.code === 200) {
@@ -670,6 +689,8 @@ const handleSubmit = async () => {
         console.error('保存排片失败:', error);
         const errorMessage = error.response?.data?.message || error.message || '保存失败';
         ElMessage.error(errorMessage);
+      } finally {
+        loading.submit = false;
       }
     }
   });

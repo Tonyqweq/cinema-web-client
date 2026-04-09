@@ -3,12 +3,16 @@ import AdminLogin from '@/views/admin/AdminLogin.vue'
 import AdminRegister from '@/views/admin/AdminRegister.vue'
 import AdminLayout from '@/views/admin/AdminLayout.vue'
 import AdminDashboard from '@/views/pages/AdminDashboard.vue'
+import AdminSettingsBasic from '@/views/pages/AdminSettingsBasic.vue'
 import MoviesList from '@/views/pages/MoviesList.vue'
 import CinemasList from '@/views/pages/CinemasList.vue'
 import HallsList from '@/views/pages/HallsList.vue'
 import UsersList from '@/views/pages/UsersList.vue'
 import CinemaMoviesBind from '@/views/pages/CinemaMoviesBind.vue'
 import ShowtimesList from '@/views/pages/ShowtimesList.vue'
+import TicketBooking from '@/views/pages/TicketBooking.vue'
+import OrdersList from '@/views/pages/OrdersList.vue'
+import MyOrders from '@/views/pages/MyOrders.vue'
 import request from '@/utils/request'
 import { persistSessionPayload, canAccessAny } from '@/utils/auth'
 import {
@@ -52,7 +56,7 @@ const routes = [
       },
       {
         path: 'orders',
-        component: AdminDashboard,
+        component: OrdersList,
         meta: { roles: ORDER_PAGE_ROLES }
       },
       {
@@ -67,13 +71,23 @@ const routes = [
       },
       {
         path: 'settings/basic',
-        component: AdminDashboard,
+        component: AdminSettingsBasic,
         meta: { roles: SETTINGS_PAGE_ROLES }
       },
       {
         path: 'settings/role',
         component: AdminDashboard,
         meta: { roles: SETTINGS_PAGE_ROLES }
+      },
+      {
+        path: 'ticket-booking',
+        component: TicketBooking,
+        meta: { roles: [] } // 所有用户都可以访问购票功能
+      },
+      {
+        path: 'my-orders',
+        component: MyOrders,
+        meta: { roles: [] } // 所有用户都可以访问我的订单
       }
     ]
   }

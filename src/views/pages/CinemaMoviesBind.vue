@@ -26,8 +26,8 @@
     >
       <el-table-column type="index" label="序号" width="60" />
       <el-table-column prop="title" label="电影标题" min-width="200" />
-      <el-table-column prop="director" label="导演" min-width="150" />
-      <el-table-column prop="actors" label="主演" min-width="200" />
+      <!-- <el-table-column prop="director" label="导演" min-width="150" />
+      <el-table-column prop="actors" label="主演" min-width="200" /> -->
       <el-table-column prop="releaseDate" label="上映日期" min-width="150" />
       <el-table-column label="操作" fixed="right" min-width="150">
         <template #default="{ row }">
@@ -54,7 +54,7 @@
       <div class="search-bar">
         <el-input
           v-model="searchKeyword"
-          placeholder="搜索电影标题、导演或主演"
+          placeholder="搜索电影标题"
           clearable
           style="width: 400px"
           @keyup.enter="searchMovies"
@@ -73,8 +73,8 @@
       >
         <el-table-column type="index" label="序号" width="60" />
         <el-table-column prop="title" label="电影标题" min-width="200" />
-        <el-table-column prop="director" label="导演" min-width="150" />
-        <el-table-column prop="actors" label="主演" min-width="200" />
+        <!-- <el-table-column prop="director" label="导演" min-width="150" />
+        <el-table-column prop="actors" label="主演" min-width="200" /> -->
         <el-table-column prop="releaseDate" label="上映日期" min-width="150" />
         <el-table-column prop="status" label="状态" min-width="100">
           <template #default="{ row }">

@@ -44,6 +44,15 @@
           <el-menu-item v-if="showUserMenu" index="/admin/users">用户管理</el-menu-item>
         </el-sub-menu>
 
+        <!-- 一级：购票功能（多级） -->
+        <el-sub-menu index="ticket">
+          <template #title>
+            <span>电影购票</span>
+          </template>
+          <el-menu-item index="/admin/ticket-booking">在线购票</el-menu-item>
+          <el-menu-item index="/admin/my-orders">我的订单</el-menu-item>
+        </el-sub-menu>
+
         <!-- 一级：系统设置（多级） -->
         <el-sub-menu v-if="showSettingsMenu" index="system">
           <template #title>
