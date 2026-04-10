@@ -1,55 +1,80 @@
 <template>
-    <div class="page">
-      <el-card class="card" shadow="always">
-        <div class="title">管理端登录</div>
-  
-        <el-form ref="formRef" :model="form" :rules="rules" size="large">
-          <el-form-item prop="username">
-            <el-input v-model.trim="form.username" placeholder="用户名" clearable @blur="fetchEmail" />
+  <div class="login-page">
+    <div class="login-bg">
+      <div class="bg-overlay"></div>
+    </div>
+    <div class="login-container">
+      <div class="login-card">
+        <div class="logo-container">
+          <h1 class="logo">CineBook</h1>
+          <p class="slogan">影院购票管理系统</p>
+        </div>
+        
+        <el-form ref="formRef" :model="form" :rules="rules" size="large" class="login-form">
+          <el-form-item prop="username" class="form-item">
+            <el-input v-model.trim="form.username" placeholder="用户名" clearable @blur="fetchEmail" class="custom-input">
+              <template #prefix>
+                <el-icon class="input-icon"><User /></el-icon>
+              </template>
+            </el-input>
           </el-form-item>
 
-          <el-form-item prop="password">
+          <el-form-item prop="password" class="form-item">
             <el-input
               v-model="form.password"
               type="password"
               show-password
               placeholder="密码"
               autocomplete="current-password"
-            />
+              class="custom-input"
+            >
+              <template #prefix>
+                <el-icon class="input-icon"><Lock /></el-icon>
+              </template>
+            </el-input>
           </el-form-item>
 
-          <el-form-item prop="email">
-            <el-input v-model.trim="form.email" placeholder="邮箱" clearable />
+          <el-form-item prop="email" class="form-item">
+            <el-input v-model.trim="form.email" placeholder="邮箱" clearable class="custom-input">
+              <template #prefix>
+                <el-icon class="input-icon"><Message /></el-icon>
+              </template>
+            </el-input>
           </el-form-item>
 
-          <el-form-item prop="verificationCode">
-            <el-input v-model.trim="form.verificationCode" placeholder="验证码" clearable>
+          <el-form-item prop="verificationCode" class="form-item">
+            <el-input v-model.trim="form.verificationCode" placeholder="验证码" clearable class="custom-input">
+              <template #prefix>
+                <el-icon class="input-icon"><Key /></el-icon>
+              </template>
               <template #append>
-                <el-button :loading="sendingCode" :disabled="countdown > 0" @click="sendVerificationCode">
+                <el-button :loading="sendingCode" :disabled="countdown > 0" @click="sendVerificationCode" class="code-btn">
                   {{ countdown > 0 ? `${countdown}s` : '发送验证码' }}
                 </el-button>
               </template>
             </el-input>
           </el-form-item>
-  
-          <div class="row">
-            <el-checkbox v-model="rememberMe">记住我</el-checkbox>
-            <el-link type="primary" @click="goRegister">去注册</el-link>
+
+          <div class="form-actions">
+            <el-checkbox v-model="rememberMe" class="remember-checkbox">记住我</el-checkbox>
+            <el-link type="primary" @click="goRegister" class="register-link">去注册</el-link>
           </div>
-  
-          <el-button type="primary" :loading="loading" style="width: 100%" @click="onSubmit">
+
+          <el-button type="primary" :loading="loading" class="login-btn" @click="onSubmit">
             登录
           </el-button>
         </el-form>
-      </el-card>
+      </div>
     </div>
-  </template>
+  </div>
+</template>
   
   <script setup lang="ts">
   import { reactive, ref, onMounted } from 'vue'
   import { useRouter } from 'vue-router'
   import type { FormInstance, FormRules } from 'element-plus'
   import { ElMessage } from 'element-plus'
+  import { User, Lock, Message, Key } from '@element-plus/icons-vue'
   import request from '../../utils/request'
   
   const router = useRouter()
@@ -113,7 +138,7 @@
             localStorage.setItem('admin_permissions', JSON.stringify(d.permissions))
           }
           ElMessage.success('自动登录成功')
-          router.push('/admin/dashboard')
+          router.push('/')
         }
       } catch (e) {
         // 自动登录失败，清除token
@@ -212,7 +237,7 @@
         }
 
         ElMessage.success('登录成功')
-        router.push('/admin/dashboard')
+        router.push('/')
       } catch (e: any) {
         ElMessage.error(e?.response?.data?.msg || e?.message || '请求失败')
       } finally {
@@ -223,26 +248,145 @@
   </script>
   
   <style scoped>
-  .page {
+  .login-page {
     min-height: 100vh;
+    position: relative;
+    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f5f7fa;
   }
-  .card {
-    width: 420px;
+  
+  .login-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    z-index: 1;
   }
-  .title {
-    font-size: 20px;
-    font-weight: 600;
+  
+  .bg-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtMS42NTYgMC0zIDEuMzQ0LTMgM3M2IDAgNi0zLTYuMS0zLjEtNi4xIDMuMSAwIDYgMyA2eiIvPjwvZz48L3N2Zz4=') repeat;
+    opacity: 0.1;
+  }
+  
+  .login-container {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 450px;
+    padding: 0 20px;
+  }
+  
+  .login-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    padding: 40px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+  
+  .logo-container {
     text-align: center;
-    margin-bottom: 18px;
+    margin-bottom: 30px;
   }
-  .row {
+  
+  .logo {
+    font-size: 32px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #e63946, #457b9d);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0 0 8px 0;
+    letter-spacing: 2px;
+  }
+  
+  .slogan {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+  }
+  
+  .login-form {
+    width: 100%;
+  }
+  
+  .form-item {
+    margin-bottom: 20px;
+  }
+  
+  .custom-input {
+    border-radius: 10px;
+    height: 48px;
+    border: 1px solid #e1e5e9;
+    transition: all 0.3s ease;
+  }
+  
+  .custom-input:focus {
+    border-color: #457b9d;
+    box-shadow: 0 0 0 2px rgba(69, 123, 157, 0.2);
+  }
+  
+  .input-icon {
+    color: #999;
+  }
+  
+  .code-btn {
+    border-radius: 8px;
+    padding: 0 16px;
+  }
+  
+  .form-actions {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 6px 0 14px;
+    margin: 10px 0 24px;
+  }
+  
+  .remember-checkbox {
+    font-size: 14px;
+  }
+  
+  .register-link {
+    font-size: 14px;
+  }
+  
+  .login-btn {
+    width: 100%;
+    height: 48px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #e63946, #457b9d);
+    border: none;
+    transition: all 0.3s ease;
+  }
+  
+  .login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(230, 57, 70, 0.3);
+  }
+  
+  .login-btn:active {
+    transform: translateY(0);
+  }
+  
+  @media (max-width: 768px) {
+    .login-card {
+      padding: 30px 20px;
+    }
+    
+    .logo {
+      font-size: 28px;
+    }
   }
   </style>

@@ -1,6 +1,6 @@
 <template>
   <div class="ticket-booking">
-    <h2>电影购票系统</h2>
+    <h2>电影购票</h2>
     
     <!-- 电影选择 -->
     <el-card class="mb-4">
@@ -104,8 +104,22 @@
       <template #header>
         <div class="card-header">
           <span>选择座位</span>
+          <el-button type="info" size="small" @click="refreshSeats" :disabled="!selectedShowtime">
+            刷新座位状态
+          </el-button>
         </div>
       </template>
+      
+      <!-- 倒计时提示 -->
+      <el-alert
+        v-if="showCountdown"
+        :title="`预定成功，${countdown}秒后跳转到支付页面`"
+        type="success"
+        :closable="false"
+        show-icon
+        style="margin-bottom: 20px;"
+      />
+      
       <div class="seat-container">
         <div class="screen">屏幕</div>
         <div class="seats-grid" :style="{ gridTemplateColumns: `repeat(${gridColumns}, 36px)` }">
@@ -197,6 +211,8 @@ const selectedShowtime = ref(null)
 const selectedSeats = ref([])
 const loading = ref(false)
 const movieSearchKeyword = ref('')
+const countdown = ref(3)
+const showCountdown = ref(false)
 
 // 计算座位网格的列数
 const gridColumns = computed(() => {
@@ -393,6 +409,17 @@ const selectSeat = (seat) => {
   }
 }
 
+// 刷新座位状态
+const refreshSeats = async () => {
+  if (!selectedShowtime.value) return
+  
+  // 清空已选择的座位，因为座位状态可能已经变化
+  selectedSeats.value = []
+  // 重新加载座位信息
+  await loadSeats()
+  ElMessage.success('座位状态已刷新')
+}
+
 // 计算总价（座位价格优先，如果座位没有设置价格则使用场次统一价格）
 const calculateTotalPrice = () => {
   if (!selectedShowtime.value || selectedSeats.value.length === 0) return 0
@@ -430,7 +457,26 @@ const submitOrder = async () => {
     console.log('订单提交响应:', response.data)
     
     if (response.data.code === 200) {
-      ElMessage.success('订单提交成功')
+      // 显示预定成功提示
+      ElMessage.success('预定成功')
+      
+      // 显示倒计时
+      showCountdown.value = true
+      countdown.value = 3
+      
+      // 启动倒计时
+      const timer = setInterval(() => {
+        countdown.value--
+        if (countdown.value <= 0) {
+          clearInterval(timer)
+          showCountdown.value = false
+          // 跳转到支付页面
+          const orderId = response.data.data.id
+          // 跳转到支付页面路由
+          window.location.href = `/admin/pay/${orderId}`
+        }
+      }, 1000)
+      
       // 重置选择
       selectedSeats.value = []
       // 重新加载座位信息

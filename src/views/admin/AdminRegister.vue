@@ -168,7 +168,7 @@
         }
 
         ElMessage.success('注册成功')
-        router.push('/admin/dashboard')
+        router.push('/')
       } catch (e: any) {
         ElMessage.error(e?.response?.data?.msg || e?.message || '请求失败')
       } finally {

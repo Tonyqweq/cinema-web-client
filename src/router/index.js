@@ -1,4 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import Home from '@/views/Home.vue'
+import Movies from '@/views/Movies.vue'
+import MovieDetail from '@/views/MovieDetail.vue'
+import Profile from '@/views/Profile.vue'
+import MovieTicketBooking from '@/views/MovieTicketBooking.vue'
+import TicketRecords from '@/views/TicketRecords.vue'
 import AdminLogin from '@/views/admin/AdminLogin.vue'
 import AdminRegister from '@/views/admin/AdminRegister.vue'
 import AdminLayout from '@/views/admin/AdminLayout.vue'
@@ -13,6 +19,7 @@ import ShowtimesList from '@/views/pages/ShowtimesList.vue'
 import TicketBooking from '@/views/pages/TicketBooking.vue'
 import OrdersList from '@/views/pages/OrdersList.vue'
 import MyOrders from '@/views/pages/MyOrders.vue'
+import Pay from '@/views/pages/Pay.vue'
 import request from '@/utils/request'
 import { persistSessionPayload, canAccessAny } from '@/utils/auth'
 import {
@@ -25,7 +32,12 @@ import {
 import { ElMessage } from 'element-plus'
 
 const routes = [
-  { path: '/', redirect: '/admin/dashboard' },
+  { path: '/', component: Home },
+  { path: '/movies', component: Movies },
+  { path: '/movies/:id', component: MovieDetail },
+  { path: '/movies/:movieId/book', component: MovieTicketBooking },
+  { path: '/profile', component: Profile },
+  { path: '/ticket-records', component: TicketRecords },
   { path: '/admin/login', component: AdminLogin },
   { path: '/admin/register', component: AdminRegister },
   {
@@ -88,6 +100,11 @@ const routes = [
         path: 'my-orders',
         component: MyOrders,
         meta: { roles: [] } // 所有用户都可以访问我的订单
+      },
+      {
+        path: 'pay/:id',
+        component: Pay,
+        meta: { roles: [] } // 所有用户都可以访问支付页面
       }
     ]
   }
@@ -108,10 +125,9 @@ function denyRole(next) {
 }
 
 router.beforeEach(async (to, from, next) => {
-  const isAdminRoute = to.path.startsWith('/admin')
   const isAuthPage = to.path === '/admin/login' || to.path === '/admin/register'
 
-  if (!isAdminRoute || isAuthPage) {
+  if (isAuthPage) {
     return next()
   }
 

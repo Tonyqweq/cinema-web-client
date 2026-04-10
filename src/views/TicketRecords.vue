@@ -1,97 +1,129 @@
 <template>
-  <div class="my-orders">
+  <div class="ticket-records">
+    <!-- 导航栏 -->
+    <nav class="navbar">
+      <div class="nav-content">
+        <div class="logo">
+          <h1>🎬 影院之家</h1>
+        </div>
+        <div class="nav-links">
+          <router-link to="/" class="nav-link">首页</router-link>
+          <router-link to="/movies" class="nav-link">电影库</router-link>
+          <router-link to="/ticket-records" class="nav-link active">购票记录</router-link>
+          <router-link v-if="!isUserRole" to="/admin" class="nav-link">管理后台</router-link>
+        </div>
+        <div class="user-actions">
+          <el-button type="primary" @click="goToProfile">个人中心</el-button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- 页面头部 -->
     <div class="page-header">
-      <h1>我的订单</h1>
+      <div class="header-content">
+        <h1>🎬 购票记录</h1>
+        <p>查看和管理您的电影票订单</p>
+      </div>
     </div>
 
-    <div class="filter-section">
-      <el-form :inline="true" :model="searchForm" class="search-form">
-        <el-form-item label="订单状态">
-          <el-select v-model="searchForm.status" placeholder="全部状态" clearable style="width: 120px;">
-            <el-option label="待支付" :value="0" />
-            <el-option label="已支付" :value="1" />
-            <el-option label="已完成" :value="2" />
-            <el-option label="已取消" :value="3" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch">查询</el-button>
-          <el-button @click="handleReset">重置</el-button>
-        </el-form-item>
-      </el-form>
-    </div>
+    <!-- 内容区域 -->
+    <div class="content">
+      <!-- 过滤区域 -->
+      <div class="filter-section">
+        <el-card shadow="hover">
+          <el-form :inline="true" :model="searchForm" class="search-form">
+            <el-form-item label="订单状态">
+              <el-select v-model="searchForm.status" placeholder="全部状态" clearable style="width: 120px;">
+                <el-option label="待支付" :value="0" />
+                <el-option label="已支付" :value="1" />
+                <el-option label="已完成" :value="2" />
+                <el-option label="已取消" :value="3" />
+              </el-select>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="handleSearch">查询</el-button>
+              <el-button @click="handleReset">重置</el-button>
+            </el-form-item>
+          </el-form>
+        </el-card>
+      </div>
 
-    <el-table
-      v-loading="loading"
-      :data="filteredOrders"
-      border
-      style="width: 100%"
-      empty-text="暂无订单"
-    >
-      <el-table-column type="index" label="序号" width="60" />
-      <el-table-column prop="id" label="订单ID" min-width="80" />
-      <el-table-column prop="showtimeId" label="场次ID" min-width="80" />
-      <el-table-column label="订单状态" min-width="100">
-        <template #default="{ row }">
-          <el-tag :type="getStatusType(row.orderStatus)">
-            {{ getStatusText(row.orderStatus) }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="totalPrice" label="总金额" min-width="100">
-        <template #default="{ row }">
-          ¥{{ row.totalPrice }}
-        </template>
-      </el-table-column>
-      <el-table-column label="剩余支付时间" min-width="150">
-        <template #default="{ row }">
-          <span v-if="row.orderStatus === 0" :class="{ 'text-danger': getRemainingTime(row.createdAt) <= 60 }">
-            {{ formatRemainingTime(getRemainingTime(row.createdAt)) }}
-          </span>
-          <span v-else>--</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="创建时间" min-width="150">
-        <template #default="{ row }">
-          {{ formatDate(row.createdAt) }}
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" fixed="right" min-width="200">
-        <template #default="{ row }">
-          <el-button size="small" type="primary" plain @click="handleView(row)">查看</el-button>
-          <el-button 
-            v-if="row.orderStatus === 0 && getRemainingTime(row.createdAt) > 0" 
-            size="small" 
-            type="success" 
-            plain 
-            @click="handlePay(row)"
-          >
-            支付
-          </el-button>
-          <el-button 
-            v-if="row.orderStatus === 0 && getRemainingTime(row.createdAt) > 0" 
-            size="small" 
-            type="danger" 
-            plain 
-            @click="handleCancel(row)"
-          >
-            取消
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+      <!-- 订单列表 -->
+      <el-card shadow="hover" class="orders-card">
+        <el-table
+          v-loading="loading"
+          :data="filteredOrders"
+          border
+          style="width: 100%"
+          empty-text="暂无订单"
+        >
+          <el-table-column type="index" label="序号" width="60" />
+          <el-table-column prop="id" label="订单ID" min-width="80" />
+          <el-table-column prop="showtimeId" label="场次ID" min-width="80" />
+          <el-table-column label="订单状态" min-width="100">
+            <template #default="{ row }">
+              <el-tag :type="getStatusType(row.orderStatus)">
+                {{ getStatusText(row.orderStatus) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="totalPrice" label="总金额" min-width="100">
+            <template #default="{ row }">
+              ¥{{ row.totalPrice }}
+            </template>
+          </el-table-column>
+          <el-table-column label="剩余支付时间" min-width="150">
+            <template #default="{ row }">
+              <span v-if="row.orderStatus === 0" :class="{ 'text-danger': getRemainingTime(row.createdAt) <= 60 }">
+                {{ formatRemainingTime(getRemainingTime(row.createdAt)) }}
+              </span>
+              <span v-else>--</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="创建时间" min-width="150">
+            <template #default="{ row }">
+              {{ formatDate(row.createdAt) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" fixed="right" min-width="200">
+            <template #default="{ row }">
+              <el-button size="small" type="primary" plain @click="handleView(row)">查看</el-button>
+              <el-button 
+                v-if="row.orderStatus === 0 && getRemainingTime(row.createdAt) > 0" 
+                size="small" 
+                type="success" 
+                plain 
+                @click="handlePay(row)"
+              >
+                支付
+              </el-button>
+              <el-button 
+                v-if="row.orderStatus === 0 && getRemainingTime(row.createdAt) > 0" 
+                size="small" 
+                type="danger" 
+                plain 
+                @click="handleCancel(row)"
+              >
+                取消
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
 
-    <div class="pagination-row">
-      <el-pagination
-        background
-        layout="total, sizes, prev, pager, next, jumper"
-        :current-page="currentPage"
-        :page-sizes="[10, 20, 50, 100]"
-        :page-size="pageSize"
-        :total="total"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+        <!-- 分页 -->
+        <div class="pagination-row">
+          <el-pagination
+            background
+            layout="total, sizes, prev, pager, next, jumper"
+            :current-page="currentPage"
+            :page-sizes="[10, 20, 50, 100]"
+            :page-size="pageSize"
+            :total="total"
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+          />
+        </div>
+      </el-card>
     </div>
 
     <!-- 订单详情对话框 -->
@@ -133,6 +165,18 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import request from '@/utils/request'
+import { useRouter } from 'vue-router'
+
+// 路由
+const router = useRouter()
+
+// 用户角色
+const isUserRole = ref(true) // 默认为普通用户
+
+// 跳转到个人中心
+const goToProfile = () => {
+  router.push('/profile')
+}
 
 // 状态管理
 const loading = ref(false)
@@ -346,21 +390,104 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.my-orders {
-  padding: 20px;
+.ticket-records {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
-.page-header {
+/* 导航栏样式 */
+.navbar {
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.nav-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  height: 80px;
 }
 
-.page-header h1 {
+.logo h1 {
   margin: 0;
-  font-size: 24px;
-  font-weight: 600;
+  font-size: 1.8rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nav-links {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: #333;
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+  background: rgba(102, 126, 234, 0.1);
+  color: #667eea;
+}
+
+.nav-link.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.user-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* 页面头部 */
+.page-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 40px 0;
+  border-radius: 0 0 20px 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.header-content h1 {
+  margin: 0 0 10px 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.header-content p {
+  margin: 0;
+  font-size: 1.2rem;
+  text-align: center;
+  opacity: 0.9;
+}
+
+/* 内容区域 */
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
 .filter-section {
@@ -373,6 +500,12 @@ onUnmounted(() => {
   gap: 10px;
 }
 
+.orders-card {
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
 .pagination-row {
   margin-top: 20px;
   display: flex;
@@ -382,5 +515,50 @@ onUnmounted(() => {
 .text-danger {
   color: #f56c6c;
   font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .nav-content {
+    flex-direction: column;
+    height: auto;
+    padding: 15px 20px;
+  }
+
+  .nav-links {
+    margin: 10px 0;
+  }
+
+  .page-header {
+    padding: 30px 0;
+  }
+
+  .header-content h1 {
+    font-size: 2rem;
+  }
+
+  .header-content p {
+    font-size: 1rem;
+  }
+
+  .content {
+    padding: 10px;
+  }
+
+  .search-form {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .search-form .el-form-item {
+    width: 100%;
+  }
+
+  .search-form .el-select {
+    width: 100%;
+  }
+
+  .pagination-row {
+    justify-content: center;
+  }
 }
 </style>

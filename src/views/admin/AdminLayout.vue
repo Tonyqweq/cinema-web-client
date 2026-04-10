@@ -2,7 +2,7 @@
   <el-container class="layout">
     <!-- 左侧多级菜单栏 -->
     <el-aside width="220px" class="aside">
-      <div class="logo">影院管理系统</div>
+      <div class="logo" >影院管理系统</div>
       <el-menu
         class="menu"
         background-color="#001529"
@@ -56,10 +56,9 @@
         <!-- 一级：系统设置（多级） -->
         <el-sub-menu v-if="showSettingsMenu" index="system">
           <template #title>
-            <span>系统设置</span>
+            <span>账户管理</span>
           </template>
-          <el-menu-item index="/admin/settings/basic">基础设置</el-menu-item>
-          <!-- <el-menu-item index="/admin/settings/role">角色权限</el-menu-item> -->
+          <el-menu-item index="/admin/settings/basic">个人信息</el-menu-item>
         </el-sub-menu>
       </el-menu>
     </el-aside>
@@ -162,7 +161,7 @@ async function logout() {
 }
 
 function goHome() {
-  router.push('/admin/dashboard')
+  router.push('/')
 }
 </script>
 

@@ -106,6 +106,13 @@
 
     <el-dialog v-model="detailVisible" title="影片详情" width="720px">
       <el-descriptions v-if="detail" :column="2" border>
+          <!-- 海报图片 -->
+          <el-descriptions-item label="海报" :span="2">
+            <div class="poster-container">
+              <img v-if="detail.posterUrl" :src="proxyImageUrl(detail.posterUrl)" class="poster-image" alt="电影海报" @error="handleImageError">
+              <span v-else>暂无海报</span>
+            </div>
+          </el-descriptions-item>
           <el-descriptions-item label="ID">{{ detail.id }}</el-descriptions-item>
           <el-descriptions-item label="电影名称">{{ detail.title }}</el-descriptions-item>
           <el-descriptions-item label="英文名/原名">{{ detail.originalTitle }}</el-descriptions-item>
@@ -163,8 +170,19 @@
             <el-form-item label="简介" prop="description">
               <el-input v-model="addForm.description" type="textarea" :rows="3" />
             </el-form-item>
-            <el-form-item label="海报URL" prop="poster_url">
-              <el-input v-model.trim="addForm.poster_url" clearable />
+            <el-form-item label="海报" prop="poster_url">
+              <el-upload
+                class="poster-upload"
+                drag
+                :auto-upload="false"
+                :limit="1"
+                accept="image/*"
+                :on-change="handleAddPosterUpload"
+                :on-remove="() => (addPosterFile = null)"
+              >
+                <div class="el-upload__text">将海报图片拖到此处，或 <em>点击选择</em></div>
+              </el-upload>
+              <el-input v-model.trim="addForm.poster_url" clearable style="margin-top: 10px" />
             </el-form-item>
             <el-form-item label="预告片URL" prop="trailer_url">
               <el-input v-model.trim="addForm.trailer_url" clearable />
@@ -232,8 +250,18 @@
         <el-form-item label="简介" prop="description">
           <el-input v-model="editForm.description" type="textarea" :rows="3" />
         </el-form-item>
-        <el-form-item label="海报URL" prop="poster_url">
-          <el-input v-model.trim="editForm.poster_url" clearable />
+        <el-form-item label="海报" prop="poster_url">
+          <el-upload
+            class="poster-upload"
+            drag
+            :auto-upload="false"
+            :limit="1"
+            accept="image/*"
+            :on-change="handlePosterUpload"
+            :on-remove="() => (editPosterFile = null)"
+          >
+            <div class="el-upload__text">将海报图片拖到此处，或 <em>点击选择</em></div>
+          </el-upload>
         </el-form-item>
         <el-form-item label="预告片URL" prop="trailer_url">
           <el-input v-model.trim="editForm.trailer_url" clearable />
@@ -286,12 +314,14 @@ const importSubmitting = ref(false)
 const importFile = ref(null)
 const addFormRef = ref()
 const addForm = ref(emptyMovieForm())
+const addPosterFile = ref(null)
 
 const editVisible = ref(false)
 const editSubmitting = ref(false)
 const editFormRef = ref()
 const editForm = ref(emptyMovieForm())
 const editingId = ref(null)
+const editPosterFile = ref(null)
 
 const formRules = {
   title: [{ required: true, message: '请输入电影名称', trigger: 'blur' }],
@@ -405,10 +435,23 @@ async function onView(movie) {
       return
     }
     detail.value = res.data?.data
+    console.log('电影详情:', detail.value)
+    console.log('海报URL:', detail.value?.posterUrl)
     detailVisible.value = true
   } catch (e) {
     ElMessage.error(e?.response?.data?.msg || e?.message || '请求失败')
   }
+}
+
+function handleImageError(e) {
+  console.error('图片加载失败:', e.target.src)
+  // 显示默认占位图片
+  e.target.src = 'https://via.placeholder.com/300x400?text=电影海报'
+}
+
+function proxyImageUrl(url) {
+  if (!url) return ''
+  return `/api/movies/proxy-image?url=${encodeURIComponent(url)}`
 }
 
 async function onAction(movie) {
@@ -441,6 +484,33 @@ function resetAddForm() {
   addForm.value = emptyMovieForm()
   importFile.value = null
   addTab.value = 'single'
+  addPosterFile.value = null
+}
+
+async function uploadPoster(file) {
+  if (!file) return null
+  
+  try {
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await request.post('/movies/upload-poster', fd)
+    if (res.data?.code !== 200) {
+      ElMessage.error(res.data?.msg || '上传失败')
+      return null
+    }
+    return res.data?.data
+  } catch (e) {
+    ElMessage.error(e?.response?.data?.msg || e?.message || '上传失败')
+    return null
+  }
+}
+
+function handleAddPosterUpload(uploadFile) {
+  addPosterFile.value = uploadFile?.raw || null
+}
+
+function handlePosterUpload(uploadFile) {
+  editPosterFile.value = uploadFile?.raw || null
 }
 
 function onImportFileChange(uploadFile) {
@@ -467,6 +537,14 @@ async function submitAddSingle() {
     if (!valid) return
     addSubmitting.value = true
     try {
+      // 检查是否有海报文件需要上传
+      if (addPosterFile.value) {
+        const posterUrl = await uploadPoster(addPosterFile.value)
+        if (posterUrl) {
+          addForm.value.poster_url = posterUrl
+        }
+      }
+      
       const res = await request.post('/movies', payloadFromForm(addForm.value))
       if (res.data?.code !== 200) {
         ElMessage.error(res.data?.msg || '添加失败')
@@ -596,6 +674,14 @@ async function submitEdit() {
     if (!valid) return
     editSubmitting.value = true
     try {
+      // 检查是否有海报文件需要上传
+      if (editPosterFile.value) {
+        const posterUrl = await uploadPoster(editPosterFile.value)
+        if (posterUrl) {
+          editForm.value.poster_url = posterUrl
+        }
+      }
+      
       const res = await request.put(`/movies/${editingId.value}`, payloadFromForm(editForm.value))
       if (res.data?.code !== 200) {
         ElMessage.error(res.data?.msg || '保存失败')
@@ -657,5 +743,20 @@ async function submitEdit() {
 .hint code {
   font-size: 12px;
   word-break: break-all;
+}
+
+.poster-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.poster-image {
+  max-width: 200px;
+  max-height: 300px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 </style>

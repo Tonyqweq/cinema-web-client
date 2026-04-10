@@ -6,7 +6,7 @@
 
     <div class="filter-section">
       <el-form :inline="true" :model="searchForm" class="search-form">
-        <el-form-item label="订单状态">
+        <el-form-item label="订单状态" >
           <el-select v-model="searchForm.status" placeholder="全部状态" clearable>
             <el-option label="待支付" :value="0" />
             <el-option label="已支付" :value="1" />
