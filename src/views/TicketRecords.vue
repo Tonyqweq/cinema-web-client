@@ -1,22 +1,8 @@
 <template>
   <div class="ticket-records">
     <!-- 导航栏 -->
-    <nav class="navbar">
-      <div class="nav-content">
-        <div class="logo">
-          <h1>🎬 影院之家</h1>
-        </div>
-        <div class="nav-links">
-          <router-link to="/" class="nav-link">首页</router-link>
-          <router-link to="/movies" class="nav-link">电影库</router-link>
-          <router-link to="/ticket-records" class="nav-link active">购票记录</router-link>
-          <router-link v-if="!isUserRole" to="/admin" class="nav-link">管理后台</router-link>
-        </div>
-        <div class="user-actions">
-          <el-button type="primary" @click="goToProfile">个人中心</el-button>
-        </div>
-      </div>
-    </nav>
+    <Navbar />
+
 
     <!-- 页面头部 -->
     <div class="page-header">
@@ -158,6 +144,9 @@
         </el-button>
       </template>
     </el-dialog>
+
+    <!-- 页脚 -->
+    <Footer />
   </div>
 </template>
 
@@ -166,6 +155,9 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import request from '@/utils/request'
 import { useRouter } from 'vue-router'
+import Navbar from '@/components/Navbar.vue'
+import Footer from '@/components/Footer.vue'
+
 
 // 路由
 const router = useRouter()

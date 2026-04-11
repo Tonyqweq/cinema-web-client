@@ -1,22 +1,8 @@
 <template>
   <div class="movies-page">
     <!-- 导航栏 -->
-    <nav class="navbar">
-      <div class="nav-content">
-        <div class="logo">
-          <h1>🎬 影院之家</h1>
-        </div>
-        <div class="nav-links">
-          <router-link to="/" class="nav-link">首页</router-link>
-          <router-link to="/movies" class="nav-link active">电影库</router-link>
-          <router-link to="/ticket-records" class="nav-link">购票记录</router-link>
-          <router-link v-if="!isUserRole" to="/admin" class="nav-link">管理后台</router-link>
-        </div>
-        <div class="user-actions">
-          <el-button type="primary" @click="goToProfile">个人中心</el-button>
-        </div>
-      </div>
-    </nav>
+    <Navbar />
+
 
     <!-- 页面标题区域 -->
     <section class="page-header">
@@ -124,21 +110,18 @@
     </section>
 
     <!-- 页脚 -->
-    <footer class="footer">
-      <div class="footer-content">
-        <p>© 2024 影院之家 - 您的专属影院体验</p>
-        <p>技术支持：Spring Boot + Vue 3 + Element Plus</p>
-      </div>
-    </footer>
+    <Footer />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Tickets, Search } from '@element-plus/icons-vue'
+import { Search, Star } from '@element-plus/icons-vue'
 import request from '../utils/request'
+import Navbar from '@/components/Navbar.vue'
+import Footer from '@/components/Footer.vue'
 
 const router = useRouter()
 const loading = ref(false)

@@ -1,22 +1,8 @@
 <template>
   <div class="home-container">
     <!-- 导航栏 -->
-    <nav class="navbar">
-      <div class="nav-content">
-        <div class="logo">
-          <h1>🎬 影院之家</h1>
-        </div>
-        <div class="nav-links">
-          <router-link to="/" class="nav-link active">首页</router-link>
-          <router-link to="/movies" class="nav-link">电影库</router-link>
-          <router-link to="/ticket-records" class="nav-link">购票记录</router-link>
-          <router-link v-if="!isUserRole" to="/admin" class="nav-link">管理后台</router-link>
-        </div>
-        <div class="user-actions">
-          <el-button type="primary" @click="goToProfile">个人中心</el-button>
-        </div>
-      </div>
-    </nav>
+    <Navbar />
+
 
     <!-- Hero 区域 -->
     <section class="hero-section">
@@ -93,12 +79,7 @@
     </section>
 
     <!-- 页脚 -->
-    <footer class="footer">
-      <div class="footer-content">
-        <p>© 2026 影院之家 - 您的专属影院体验</p>
-        <p>by：Tonyqwe</p>
-      </div>
-    </footer>
+    <Footer />
   </div>
 </template>
 
@@ -108,6 +89,9 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Tickets } from '@element-plus/icons-vue'
 import request from '../utils/request'
+import Navbar from '../components/Navbar.vue'
+import Footer from '../components/Footer.vue'
+
 
 const router = useRouter()
 const loading = ref(false)

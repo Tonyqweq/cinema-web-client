@@ -94,8 +94,8 @@
     <!-- 页脚 -->
     <footer class="footer">
       <div class="footer-content">
-        <p>© 2024 影院之家 - 您的专属影院体验</p>
-        <p>技术支持：Spring Boot + Vue 3 + Element Plus</p>
+        <p>© 2026 影院之家 - 您的专属影院体验</p>
+        <p>by：Tonyqwe</p>
       </div>
     </footer>
   </div>
