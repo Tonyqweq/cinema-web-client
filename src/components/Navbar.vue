@@ -7,6 +7,7 @@
       <div class="nav-links">
         <router-link to="/" class="nav-link" :class="{ active: currentRoute === '/' }">首页</router-link>
         <router-link to="/movies" class="nav-link" :class="{ active: currentRoute === '/movies' }">电影库</router-link>
+        <router-link to="/collections" class="nav-link" :class="{ active: currentRoute === '/collections' }">我的收藏</router-link>
         <router-link to="/ticket-records" class="nav-link" :class="{ active: currentRoute === '/ticket-records' }">购票记录</router-link>
         <router-link v-if="!isUserRole" to="/admin" class="nav-link">管理后台</router-link>
       </div>
@@ -48,8 +49,10 @@ const goToProfile = () => {
 
 <style scoped>
 .navbar {
-  background: white;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -62,41 +65,39 @@ const goToProfile = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 80px;
+  height: 64px;
 }
 
 .logo h1 {
   margin: 0;
-  font-size: 1.8rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #007AFF;
+  letter-spacing: -0.5px;
 }
 
 .nav-links {
   display: flex;
-  gap: 20px;
+  gap: 8px;
 }
 
 .nav-link {
   text-decoration: none;
   color: #333;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 500;
-  padding: 8px 16px;
-  border-radius: 20px;
-  transition: all 0.3s ease;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
 }
 
 .nav-link:hover {
-  background: rgba(102, 126, 234, 0.1);
-  color: #667eea;
+  background: rgba(0, 122, 255, 0.1);
+  color: #007AFF;
 }
 
 .nav-link.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #007AFF;
   color: white;
 }
 

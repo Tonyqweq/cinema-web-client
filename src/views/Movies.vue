@@ -118,7 +118,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Search, Star } from '@element-plus/icons-vue'
+import { Search, Star, Tickets } from '@element-plus/icons-vue'
 import request from '../utils/request'
 import Navbar from '@/components/Navbar.vue'
 import Footer from '@/components/Footer.vue'
@@ -232,13 +232,14 @@ onMounted(() => {
 <style scoped>
 .movies-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #F2F2F7;
 }
 
 .navbar {
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -255,11 +256,10 @@ onMounted(() => {
 
 .logo h1 {
   margin: 0;
-  font-size: 1.8rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #007AFF;
+  letter-spacing: -0.5px;
 }
 
 .nav-links {
@@ -272,13 +272,14 @@ onMounted(() => {
   text-decoration: none;
   color: #333;
   font-weight: 500;
-  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
   position: relative;
 }
 
 .nav-link:hover,
 .nav-link.active {
-  color: #667eea;
+  color: #007AFF;
 }
 
 .nav-link::after {
@@ -288,8 +289,8 @@ onMounted(() => {
   left: 0;
   width: 0;
   height: 2px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  transition: width 0.3s ease;
+  background: #007AFF;
+  transition: width 0.2s ease;
 }
 
 .nav-link:hover::after,
@@ -298,9 +299,8 @@ onMounted(() => {
 }
 
 .page-header {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 4rem 2rem 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 4rem 2rem;
   text-align: center;
   color: white;
 }
@@ -313,12 +313,13 @@ onMounted(() => {
   font-size: 3rem;
   font-weight: 700;
   margin: 0 0 0.5rem 0;
+  color: white;
 }
 
 .page-subtitle {
   font-size: 1.2rem;
   margin: 0;
-  opacity: 0.9;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .filter-section {
@@ -347,7 +348,7 @@ onMounted(() => {
 
 .search-input :deep(.el-input__wrapper),
 .filter-select :deep(.el-input__wrapper) {
-  border-radius: 20px;
+  border-radius: 12px;
   padding: 8px 15px;
   height: 40px;
 }
@@ -364,9 +365,10 @@ onMounted(() => {
 
 .movies-container {
   background: white;
-  border-radius: 30px;
+  border-radius: 20px;
   padding: 2rem;
   min-height: 600px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 
 .movies-grid {
@@ -377,16 +379,16 @@ onMounted(() => {
 
 .movie-card-item {
   background: white;
-  border-radius: 20px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
   cursor: pointer;
 }
 
 .movie-card-item:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  transform: translateY(-8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .movie-poster {
@@ -404,18 +406,18 @@ onMounted(() => {
 }
 
 .movie-card-item:hover .movie-poster img {
-  transform: scale(1.1);
+  transform: scale(1.05);
 }
 
 .poster-placeholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #F2F2F7;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 4rem;
-  color: white;
+  color: #007AFF;
   font-weight: bold;
 }
 
@@ -462,7 +464,7 @@ onMounted(() => {
 }
 
 .rating {
-  color: #f39c12;
+  color: #FF9500;
   font-weight: 600;
 }
 
@@ -485,16 +487,17 @@ onMounted(() => {
 }
 
 .footer {
-  background: rgba(0, 0, 0, 0.3);
-  color: white;
+  background: #F2F2F7;
+  color: #333;
   text-align: center;
   padding: 2rem;
   margin-top: 2rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .footer-content p {
   margin: 0.5rem 0;
-  opacity: 0.8;
+  color: #666;
 }
 
 @keyframes fadeInUp {

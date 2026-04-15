@@ -7,7 +7,7 @@
     <!-- Hero 区域 -->
     <section class="hero-section">
       <div class="hero-content">
-        <h2 class="hero-title">发现精彩电影</h2>
+        <h1 class="hero-title">发现精彩电影</h1>
         <p class="hero-subtitle">最新上映 · 热门推荐 · 优惠活动</p>
         <div class="hero-buttons">
           <el-button type="primary" size="large" @click="goToTicketBooking">立即购票</el-button>
@@ -174,13 +174,14 @@ onMounted(() => {
 <style scoped>
 .home-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #F2F2F7;
 }
 
 .navbar {
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -197,11 +198,10 @@ onMounted(() => {
 
 .logo h1 {
   margin: 0;
-  font-size: 1.8rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #007AFF;
+  letter-spacing: -0.5px;
 }
 
 .nav-links {
@@ -214,13 +214,14 @@ onMounted(() => {
   text-decoration: none;
   color: #333;
   font-weight: 500;
-  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
   position: relative;
 }
 
 .nav-link:hover,
 .nav-link.active {
-  color: #667eea;
+  color: #007AFF;
 }
 
 .nav-link::after {
@@ -230,8 +231,8 @@ onMounted(() => {
   left: 0;
   width: 0;
   height: 2px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  transition: width 0.3s ease;
+  background: #007AFF;
+  transition: width 0.2s ease;
 }
 
 .nav-link:hover::after,
@@ -240,13 +241,13 @@ onMounted(() => {
 }
 
 .hero-section {
-  max-width: 1400px;
-  margin: 0 auto;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 6rem 2rem;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4rem;
   align-items: center;
+  color: white;
 }
 
 .hero-content {
@@ -258,13 +259,14 @@ onMounted(() => {
   font-weight: 700;
   margin-bottom: 1rem;
   line-height: 1.2;
+  color: white;
   animation: fadeInUp 0.8s ease;
 }
 
 .hero-subtitle {
   font-size: 1.5rem;
   margin-bottom: 2rem;
-  opacity: 0.9;
+  color: rgba(255, 255, 255, 0.9);
   animation: fadeInUp 0.8s ease 0.2s both;
 }
 
@@ -277,7 +279,7 @@ onMounted(() => {
 .hero-buttons .el-button {
   padding: 1rem 2rem;
   font-size: 1.1rem;
-  border-radius: 50px;
+  border-radius: 12px;
 }
 
 .hero-image {
@@ -298,9 +300,9 @@ onMounted(() => {
   position: absolute;
   width: 200px;
   height: 300px;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -340,8 +342,9 @@ onMounted(() => {
   margin: 0 auto;
   padding: 4rem 2rem;
   background: white;
-  border-radius: 30px 30px 0 0;
+  border-radius: 20px 20px 0 0;
   min-height: 600px;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
 }
 
 .section-header {
@@ -355,10 +358,7 @@ onMounted(() => {
   font-size: 2rem;
   font-weight: 700;
   margin: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #000;
 }
 
 .movies-grid {
@@ -369,16 +369,16 @@ onMounted(() => {
 
 .movie-card-item {
   background: white;
-  border-radius: 20px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
   cursor: pointer;
 }
 
 .movie-card-item:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  transform: translateY(-8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .movie-poster {
@@ -396,18 +396,18 @@ onMounted(() => {
 }
 
 .movie-card-item:hover .movie-poster img {
-  transform: scale(1.1);
+  transform: scale(1.05);
 }
 
 .poster-placeholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #F2F2F7;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 4rem;
-  color: white;
+  color: #007AFF;
   font-weight: bold;
 }
 
@@ -454,7 +454,7 @@ onMounted(() => {
 }
 
 .rating {
-  color: #f39c12;
+  color: #FF9500;
   font-weight: 600;
 }
 
@@ -474,18 +474,18 @@ onMounted(() => {
 }
 
 .feature-item {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
+  background: white;
+  border-radius: 16px;
   padding: 2rem;
   text-align: center;
-  color: white;
+  color: #333;
   transition: all 0.3s ease;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 
 .feature-item:hover {
-  transform: translateY(-10px);
-  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .feature-icon {
@@ -496,24 +496,26 @@ onMounted(() => {
 .feature-item h4 {
   margin: 0 0 0.5rem 0;
   font-size: 1.5rem;
+  color: #000;
 }
 
 .feature-item p {
   margin: 0;
-  opacity: 0.9;
+  color: #666;
 }
 
 .footer {
-  background: rgba(0, 0, 0, 0.3);
-  color: white;
+  background: #F2F2F7;
+  color: #333;
   text-align: center;
   padding: 2rem;
   margin-top: 2rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .footer-content p {
   margin: 0.5rem 0;
-  opacity: 0.8;
+  color: #666;
 }
 
 @media (max-width: 768px) {

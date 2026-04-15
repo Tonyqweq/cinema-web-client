@@ -429,6 +429,8 @@ const paymentMethod = ref('wechat')
 const paymentStatus = ref<'pending' | 'processing' | 'success' | 'failed'>('pending')
 // 支付倒计时
 const paymentCountdown = ref(900)
+// 订单ID
+const currentOrderId = ref('')
 
 // 计算座位网格的列数
 const gridColumns = computed(() => {
@@ -648,14 +650,24 @@ function resetPaymentState() {
 }
 
 // 处理支付
-function handlePayment() {
+async function handlePayment() {
   // 设置支付状态为处理中
   paymentStatus.value = 'processing'
   
   // 模拟支付处理
-  setTimeout(() => {
+  setTimeout(async () => {
     // 模拟支付成功
     paymentStatus.value = 'success'
+    
+    // 调用API更新订单状态为已支付
+    if (currentOrderId.value) {
+      try {
+        await request.put(`/orders/${currentOrderId.value}/pay`)
+        console.log('订单支付成功')
+      } catch (error) {
+        console.error('更新订单支付状态失败:', error)
+      }
+    }
     
     // 显示倒计时
     showCountdown.value = true
@@ -667,8 +679,8 @@ function handlePayment() {
       if (countdown.value <= 0) {
         clearInterval(timer)
         showCountdown.value = false
-        // 跳转到订单列表页面
-        router.push('/admin/orders')
+        // 跳转到购票记录页面
+        router.push('/ticket-records')
       }
     }, 1000)
   }, 2000)
@@ -763,6 +775,9 @@ const submitOrder = async () => {
     console.log('订单提交响应:', response.data)
     
     if (response.data.code === 200) {
+      // 保存订单ID
+      currentOrderId.value = response.data.data.id
+      
       // 关闭确认订单弹窗
       showConfirmDialog.value = false
       

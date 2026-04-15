@@ -29,6 +29,30 @@
     <!-- 个人信息区域 -->
     <section class="profile-section" v-if="userInfo">
       <div class="profile-container">
+        <!-- 头像上传卡片 -->
+        <div class="profile-card">
+          <h3 class="card-title">头像设置</h3>
+          <div class="avatar-section">
+            <div class="avatar-container">
+              <img 
+                :src="getAvatarUrl()" 
+                :alt="userInfo.username" 
+                class="avatar-image"
+              >
+              <input 
+                type="file" 
+                ref="fileInput" 
+                @change="handleFileChange" 
+                accept="image/*" 
+                class="avatar-upload-input"
+              >
+              <div class="avatar-upload-overlay" @click="triggerFileInput">
+                <span class="upload-text">更换头像</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- 个人信息卡片 -->
         <div class="profile-card">
           <h3 class="card-title">个人信息</h3>
@@ -156,6 +180,7 @@ let countdownTimer: number | null = null
 const passwordFormRef = ref()
 const phoneFormRef = ref()
 const emailFormRef = ref()
+const fileInput = ref<HTMLInputElement>()
 
 // 表单数据
 const passwordForm = ref({
@@ -295,7 +320,8 @@ async function loadUserInfo() {
         email: data.user?.email || '',
         phone: data.user?.phone || '',
         roles: data.roles || [],
-        createdAt: data.user?.createdAt || ''
+        createdAt: data.user?.createdAt || '',
+        avatar: data.user?.avatar || ''
       }
     }
   } catch (e: any) {
@@ -303,6 +329,50 @@ async function loadUserInfo() {
     ElMessage.error('加载用户信息失败')
   } finally {
     loading.value = false
+  }
+}
+
+function getAvatarUrl() {
+  if (userInfo.value?.avatar) {
+    return userInfo.value.avatar
+  }
+  return '/src/assets/images/src/assets/images/image.png'
+}
+
+function triggerFileInput() {
+  fileInput.value?.click()
+}
+
+async function handleFileChange(event: Event) {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+
+  const formData = new FormData()
+  formData.append('file', file)
+
+  loading.value = true
+  try {
+    const res = await request.post('/user/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    if (res.data?.code === 200) {
+      ElMessage.success('头像上传成功')
+      // 重新加载用户信息
+      await loadUserInfo()
+    } else {
+      ElMessage.error(res.data?.msg || '上传失败')
+    }
+  } catch (e: any) {
+    ElMessage.error(e?.response?.data?.msg || e?.message || '请求失败')
+  } finally {
+    loading.value = false
+    // 清空文件输入
+    if (fileInput.value) {
+      fileInput.value.value = ''
+    }
   }
 }
 
@@ -544,6 +614,72 @@ onMounted(() => {
 .info-value {
   font-size: 1rem;
   color: #333;
+  font-weight: 500;
+}
+
+.avatar-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem 0;
+}
+
+.avatar-container {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.avatar-container:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.avatar-upload-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.avatar-upload-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+}
+
+.avatar-container:hover .avatar-upload-overlay {
+  opacity: 1;
+}
+
+.upload-text {
+  color: white;
+  font-size: 0.9rem;
   font-weight: 500;
 }
 

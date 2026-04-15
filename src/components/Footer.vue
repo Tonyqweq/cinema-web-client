@@ -27,10 +27,11 @@
 
 <style scoped>
 .footer {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 40px 0 20px;
+  background: #F2F2F7;
+  color: #333;
+  padding: 30px 0 20px;
   margin-top: 40px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .footer-content {
@@ -44,19 +45,22 @@
 
 .footer-section h3 {
   margin: 0 0 15px 0;
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #007AFF;
 }
 
 .footer-section h4 {
   margin: 0 0 15px 0;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
+  color: #333;
 }
 
 .footer-section p {
   margin: 0 0 10px 0;
-  opacity: 0.9;
+  color: #666;
+  font-size: 0.9rem;
 }
 
 .footer-links {
@@ -66,28 +70,28 @@
 }
 
 .footer-links li {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .footer-links a {
-  color: white;
+  color: #007AFF;
   text-decoration: none;
-  opacity: 0.9;
-  transition: opacity 0.3s ease;
+  font-size: 0.9rem;
+  transition: color 0.2s ease;
 }
 
 .footer-links a:hover {
-  opacity: 1;
-  text-decoration: underline;
+  color: #0051D5;
 }
 
 .footer-bottom {
   max-width: 1200px;
-  margin: 30px auto 0;
-  padding: 20px;
+  margin: 20px auto 0;
+  padding: 15px 20px;
   text-align: center;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  opacity: 0.8;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  color: #999;
+  font-size: 0.85rem;
 }
 
 @media (max-width: 768px) {

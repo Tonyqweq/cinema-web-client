@@ -5,6 +5,7 @@ import MovieDetail from '@/views/MovieDetail.vue'
 import Profile from '@/views/Profile.vue'
 import MovieTicketBooking from '@/views/MovieTicketBooking.vue'
 import TicketRecords from '@/views/TicketRecords.vue'
+import Collections from '@/views/Collections.vue'
 import AdminLogin from '@/views/admin/AdminLogin.vue'
 import AdminRegister from '@/views/admin/AdminRegister.vue'
 import AdminLayout from '@/views/admin/AdminLayout.vue'
@@ -38,6 +39,7 @@ const routes = [
   { path: '/movies/:movieId/book', component: MovieTicketBooking },
   { path: '/profile', component: Profile },
   { path: '/ticket-records', component: TicketRecords },
+  { path: '/collections', component: Collections },
   { path: '/admin/login', component: AdminLogin },
   { path: '/admin/register', component: AdminRegister },
   {
